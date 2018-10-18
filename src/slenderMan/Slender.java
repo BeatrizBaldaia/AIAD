@@ -1,9 +1,11 @@
 package slenderMan;
 
+import sajas.core.Agent;
+import sajas.core.behaviours.TickerBehaviour;
+
 import java.util.List;
 
 import slenderMan.Player;
-import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.query.space.grid.GridCell;
 import repast.simphony.query.space.grid.GridCellNgh;
 import repast.simphony.random.RandomHelper;
@@ -14,7 +16,7 @@ import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridPoint;
 import repast.simphony.util.SimUtilities;
 
-public class Slender {
+public class Slender extends Agent{
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
 	private boolean moved;
@@ -24,28 +26,41 @@ public class Slender {
 		this.grid = grid;
 	}
 	
-	@ScheduledMethod(start = 1, interval = 1)
-	public void step() {
-		// get the grid location of this Zombie
-		GridPoint pt = grid.getLocation(this);
+	@Override
+	public void setup() {
+		addBehaviour(new RunAround(this, 1));
+	}
+	
+	private class RunAround extends TickerBehaviour {
 
-		// use the GridCellNgh class to create GridCells for
-		// the surrounding neighborhood.
-		GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, pt,
-				Player.class, 1, 1);
-		List<GridCell<Player>> gridCells = nghCreator.getNeighborhood(true);
-		SimUtilities.shuffle(gridCells, RandomHelper.getUniform());
-
-		GridPoint pointWithMostPlayers = null;
-		int maxCount = -1;
-		for (GridCell<Player> cell : gridCells) {
-			if (cell.size() > maxCount) {
-				pointWithMostPlayers = cell.getPoint();
-				maxCount = cell.size();
-			}
+		public RunAround(Agent a, long period) {
+			super(a, period);
 		}
-		moveTowards(pointWithMostPlayers);
-		
+
+		@Override
+		protected void onTick() {
+			// get the grid location of this Zombie
+			GridPoint pt = grid.getLocation(this);
+
+			// use the GridCellNgh class to create GridCells for
+			// the surrounding neighborhood.
+			GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, pt,
+					Player.class, 1, 1);
+			List<GridCell<Player>> gridCells = nghCreator.getNeighborhood(true);
+			SimUtilities.shuffle(gridCells, RandomHelper.getUniform());
+
+			GridPoint pointWithMostPlayers = null;
+			int maxCount = -1;
+			for (GridCell<Player> cell : gridCells) {
+				if (cell.size() > maxCount) {
+					pointWithMostPlayers = cell.getPoint();
+					maxCount = cell.size();
+				}
+			}
+			moveTowards(pointWithMostPlayers);
+			System.out.println(this.getAgent().getName());
+		}
+
 	}
 
 	public void moveTowards(GridPoint pt) {
