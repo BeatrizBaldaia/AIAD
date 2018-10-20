@@ -40,8 +40,7 @@ public class Slender extends Agent{
 		@Override
 		protected void onTick() {
 			// get the grid location of this Zombie
-			GridPoint pt = grid.getLocation(this);
-
+			GridPoint pt = grid.getLocation(this.getAgent());
 			// use the GridCellNgh class to create GridCells for
 			// the surrounding neighborhood.
 			GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, pt,
@@ -76,4 +75,5 @@ public class Slender extends Agent{
 			moved = true;
 		}
 	}
+
 }
