@@ -10,6 +10,10 @@
       <string>slenderMan.Player</string>
       <string>repast.simphony.visualization.editedStyle.EditedStyle2D</string>
     </entry>
+    <entry>
+      <string>slenderMan.Device</string>
+      <string>repast.simphony.visualization.editedStyle.EditedStyle2D</string>
+    </entry>
   </styles>
   <editedStyles>
     <entry>
@@ -19,6 +23,10 @@
     <entry>
       <string>slenderMan.Player</string>
       <string>slenderMan.Player.style_0.xml</string>
+    </entry>
+    <entry>
+      <string>slenderMan.Device</string>
+      <string>slenderMan.Device.style_4.xml</string>
     </entry>
   </editedStyles>
   <netStyles/>
@@ -31,7 +39,7 @@
     <pType>LAST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>-888197471</hashCode>
+    <hashCode>-982923003</hashCode>
   </schedParams>
   <layoutClassName>foo.bar.baz</layoutClassName>
   <layoutProjection>space</layoutProjection>
@@ -39,10 +47,14 @@
   <layerOrder>
     <entry>
       <string>slenderMan.Slender</string>
-      <int>1</int>
+      <int>2</int>
     </entry>
     <entry>
       <string>slenderMan.Player</string>
+      <int>1</int>
+    </entry>
+    <entry>
+      <string>slenderMan.Device</string>
       <int>0</int>
     </entry>
   </layerOrder>

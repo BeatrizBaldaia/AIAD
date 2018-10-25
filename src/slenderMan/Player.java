@@ -5,6 +5,7 @@ import java.util.List;
 
 import bsh.This;
 import slenderMan.Slender;
+import repast.simphony.context.Context;
 import repast.simphony.engine.watcher.DefaultWatchData;
 import repast.simphony.engine.watcher.Watch;
 import repast.simphony.engine.watcher.Watcher2;
@@ -18,6 +19,7 @@ import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.NdPoint;
 import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridPoint;
+import repast.simphony.util.ContextUtils;
 import repast.simphony.util.SimUtilities;
 import sajas.core.Agent;
 import sajas.core.behaviours.TickerBehaviour;
@@ -27,6 +29,7 @@ public class Player extends Agent {
 	private Grid<Object> grid;
 	private int energy, startingEnergy;
 	VNQuery<Object> nearSlender;
+	private boolean alive;
 	
 	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int energy) {
 		this.space = space;
@@ -37,6 +40,7 @@ public class Player extends Agent {
 	@Override
 	public void setup() {
 		addBehaviour(new RunAround(this, 1));
+		alive = true;
 	}
 
 	private class RunAround extends TickerBehaviour {
@@ -55,19 +59,24 @@ public class Player extends Agent {
 			while(iter.hasNext()){
 				if(iter.next().getClass() == Slender.class) {
 					s = true;
-					System.out.println("NearSlender");
+					System.out.println("NearSlender - "+this.myAgent.getName());
 					continue;
 				}
 			}
-			
+			GridPoint pt = grid.getLocation(this.getAgent());
+			objs = grid.getObjectsAt(pt.getX(), pt.getY());
+			iter = objs.iterator();
+			while(iter.hasNext()){
+				if(iter.next().getClass() == Slender.class) {
+					s = true;
+					System.out.println("NearSlender - "+this.myAgent.getName());
+					continue;
+				}
+			}
 			if(!s) {
 				return;
 			}
-			// get the grid location of this Human
-			GridPoint pt = grid.getLocation(this.getAgent());
 
-			// use the GridCellNgh class to create GridCells for
-			// the surrounding neighborhood.
 			GridCellNgh<Slender> nghCreator = new GridCellNgh<Slender>(grid, pt, Slender.class, 1, 1);
 			List<GridCell<Slender>> gridCells = nghCreator.getNeighborhood(true);
 			SimUtilities.shuffle(gridCells, RandomHelper.getUniform());
@@ -98,7 +107,24 @@ public class Player extends Agent {
 			space.moveByVector(this, 2, angle, 0);
 			myPoint = space.getLocation(this);
 			grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
-			energy--;
+			//energy--;
 		}
 	}
+
+	public boolean isAlive() {
+		return alive;
+	}
+	
+	@Override
+	public void doDelete() {
+		super.doDelete();
+		alive = false;
+	}
+
+	public void killPlayer() {
+		Context<Object> context = ContextUtils.getContext(this);
+		context.remove(this);
+		doDelete();
+	}
+
 }
