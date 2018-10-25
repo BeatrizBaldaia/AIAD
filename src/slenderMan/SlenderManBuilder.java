@@ -87,7 +87,9 @@ public class SlenderManBuilder extends RepastSLauncher implements ContextBuilder
 			int player_count = (Integer) params.getValue("player_count");
 			for (int i = 0; i < player_count; i++) {
 				int energy = RandomHelper.nextIntFromTo(4, 10);
-				context.add(new Player(space, grid, energy));
+				Player p = new Player(space, grid, energy);
+				agentContainer.acceptNewAgent("Player" + i, p).start();
+				context.add(p);
 			}
 
 			for (Object obj : context) {
