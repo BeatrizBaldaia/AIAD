@@ -27,6 +27,7 @@ public class Player extends Agent {
 	private Grid<Object> grid;
 	private int energy, startingEnergy;
 	VNQuery<Object> nearSlender;
+	
 	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int energy) {
 		this.space = space;
 		this.grid = grid;
@@ -42,12 +43,12 @@ public class Player extends Agent {
 
 		public RunAround(Agent a, long period) {
 			super(a, period);
-			nearSlender = new VNQuery<Object>(grid, this.myAgent, 2,2);
+			nearSlender = new VNQuery<Object>(grid, this.myAgent, 2, 2);
 		}
 
 		@Override
 		protected void onTick() {
-			//@Watch(watcheeClassName = "slenderMan.Slender", watcheeFieldNames = "moved", query = "within_vn 1", whenToTrigger = WatcherTriggerSchedule.IMMEDIATE)
+			
 			boolean s = false;
 			Iterable<Object> objs = nearSlender.query();
 			Iterator<Object> iter = objs.iterator();
@@ -58,6 +59,7 @@ public class Player extends Agent {
 					continue;
 				}
 			}
+			
 			if(!s) {
 				return;
 			}
@@ -96,7 +98,7 @@ public class Player extends Agent {
 			space.moveByVector(this, 2, angle, 0);
 			myPoint = space.getLocation(this);
 			grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
-			// energy--;
+			energy--;
 		}
 	}
 }

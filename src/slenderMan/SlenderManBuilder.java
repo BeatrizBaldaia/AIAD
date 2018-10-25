@@ -55,8 +55,6 @@ public class SlenderManBuilder extends RepastSLauncher implements ContextBuilder
 				new GridBuilderParameters<Object>(new WrapAroundBorders(),
 						new SimpleGridAdder<Object>(), true, 50, 50));
 
-		
-
 		return super.build(context);
 	}
 
@@ -80,6 +78,7 @@ public class SlenderManBuilder extends RepastSLauncher implements ContextBuilder
 
 		try {
 			Parameters params = RunEnvironment.getInstance().getParameters();
+			
 			Slender s = new Slender(space, grid);
 			agentContainer.acceptNewAgent("Slender" + 1, s).start();
 			context.add(s);
