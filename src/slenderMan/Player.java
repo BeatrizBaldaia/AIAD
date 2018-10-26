@@ -12,6 +12,7 @@ import repast.simphony.engine.watcher.Watcher2;
 import repast.simphony.engine.watcher.WatcherTriggerSchedule;
 import repast.simphony.query.space.grid.GridCell;
 import repast.simphony.query.space.grid.GridCellNgh;
+import repast.simphony.query.space.grid.MooreQuery;
 import repast.simphony.query.space.grid.VNQuery;
 import repast.simphony.random.RandomHelper;
 import repast.simphony.space.SpatialMath;
@@ -28,7 +29,7 @@ public class Player extends Agent {
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
 	private int energy, startingEnergy;
-	VNQuery<Object> nearSlender;
+	MooreQuery<Object> nearSlender;
 	private boolean alive;
 	
 	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int energy) {
@@ -47,7 +48,7 @@ public class Player extends Agent {
 
 		public RunAround(Agent a, long period) {
 			super(a, period);
-			nearSlender = new VNQuery<Object>(grid, this.myAgent, 2, 2);
+			nearSlender = new MooreQuery<Object>(grid, this.myAgent, 2, 2);
 		}
 
 		@Override
@@ -55,14 +56,23 @@ public class Player extends Agent {
 			
 			boolean s = false;
 			Iterable<Object> objs = nearSlender.query();
+			nearSlender.reset(this.myAgent, 2,2);
 			Iterator<Object> iter = objs.iterator();
 			while(iter.hasNext()){
-				if(iter.next().getClass() == Slender.class) {
+				Object k = iter.next();
+				if(k.getClass() == Slender.class) {
 					s = true;
 					System.out.println("NearSlender - "+this.myAgent.getName());
 					continue;
 				}
 			}
+//			Context<Object> context = ContextUtils.getContext(this.myAgent);
+//			System.out.println("ENTREAERAERERAEAR");
+//			objs = context.getObjects(Slender.class);
+//			iter = objs.iterator();
+//			System.out.println(grid.getLocation(((Slender) iter.next())));
+//			System.out.println(grid.getLocation(this.myAgent));
+//			System.out.println("_______________________");
 			GridPoint pt = grid.getLocation(this.getAgent());
 			objs = grid.getObjectsAt(pt.getX(), pt.getY());
 			iter = objs.iterator();
