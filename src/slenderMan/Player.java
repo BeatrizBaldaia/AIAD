@@ -2,6 +2,7 @@ package slenderMan;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import bsh.This;
 import slenderMan.Slender;
@@ -20,6 +21,7 @@ import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridPoint;
 import repast.simphony.util.SimUtilities;
 import sajas.core.Agent;
+import sajas.core.behaviours.CyclicBehaviour;
 import sajas.core.behaviours.TickerBehaviour;
 
 public class Player extends Agent {
@@ -27,6 +29,17 @@ public class Player extends Agent {
 	private Grid<Object> grid;
 	private int energy, startingEnergy;
 	VNQuery<Object> nearSlender;
+
+	private int distBattery;
+	private int lightPeriod;
+	private int darknessPeriod;
+	private GridPoint targetPoint;
+	private boolean mobileOn;
+	
+	static final int BIG_RADIUS = 7;
+	static final int SMALL_RADIUS = 3;
+	
+	
 	
 	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int energy) {
 		this.space = space;
@@ -100,5 +113,75 @@ public class Player extends Agent {
 			grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
 			energy--;
 		}
+	}
+	
+	public int getLightPeriod() {
+		return this.lightPeriod;
+	}
+	
+	public int getDarknessPeriod() {
+		return this.darknessPeriod;
+	}
+	
+	public void setLightPeriod(int p) {
+		this.lightPeriod = p;
+	}
+	
+	public void setDarknessPeriod(int p) {
+		this.darknessPeriod = p;
+	}
+	
+	public void turnMobileOff() {
+		this.mobileOn = true;
+	}
+	
+	public void turnMobileOn() {
+		this.mobileOn = false;
+	}
+	
+	public boolean isSlenderNear() {
+		return false;
+	}
+	
+	public void escape() {
+		
+	}
+	
+	public void step(boolean widerRange) {
+		
+	}
+	
+	private class Exploring extends CyclicBehaviour {
+		
+		Player agent = (Player)this.myAgent;
+		Random rand = new Random();
+		
+		@Override
+		public void action() {
+			int lightPeriod = agent.getLightPeriod();
+			int darknessPeriod = agent.getDarknessPeriod();
+			
+			if(agent.isSlenderNear()) {
+				turnMobileOff();
+				targetPoint = null;
+				agent.escape();
+			} else {
+				if(lightPeriod > 0) {
+					agent.step(true);
+					agent.setLightPeriod(lightPeriod - 1);
+				} else if(darknessPeriod > 0) {
+					agent.step(false);
+					agent.setDarknessPeriod(darknessPeriod - 1);
+				} else {
+					int newLightPeriod = rand.nextInt(5);
+					int newDarknessPeriod = rand.nextInt(5);
+					agent.setLightPeriod(newLightPeriod);
+					agent.setDarknessPeriod(newDarknessPeriod);
+				}
+			}
+				
+			
+		}
+		
 	}
 }
