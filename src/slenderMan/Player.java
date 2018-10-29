@@ -2,6 +2,7 @@ package slenderMan;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import bsh.This;
 import slenderMan.Slender;
@@ -23,15 +24,26 @@ import repast.simphony.space.grid.GridPoint;
 import repast.simphony.util.ContextUtils;
 import repast.simphony.util.SimUtilities;
 import sajas.core.Agent;
+import sajas.core.behaviours.CyclicBehaviour;
 import sajas.core.behaviours.TickerBehaviour;
 
 public class Player extends Agent {
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
 	private int energy, startingEnergy;
+
+	private int distBattery;
+	private int lightPeriod;
+	private int darknessPeriod;
+	private GridPoint targetPoint;
+	private boolean mobileOn;
+
+	static final int BIG_RADIUS = 7;
+	static final int SMALL_RADIUS = 3;
+
 	MooreQuery<Object> nearSlender;
 	private boolean alive;
-	
+
 	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int energy) {
 		this.space = space;
 		this.grid = grid;
@@ -53,7 +65,7 @@ public class Player extends Agent {
 
 		@Override
 		protected void onTick() {
-			
+
 			boolean s = false;
 			Iterable<Object> objs = nearSlender.query();
 			nearSlender.reset(this.myAgent, 2,2);
@@ -66,13 +78,13 @@ public class Player extends Agent {
 					continue;
 				}
 			}
-//			Context<Object> context = ContextUtils.getContext(this.myAgent);
-//			System.out.println("ENTREAERAERERAEAR");
-//			objs = context.getObjects(Slender.class);
-//			iter = objs.iterator();
-//			System.out.println(grid.getLocation(((Slender) iter.next())));
-//			System.out.println(grid.getLocation(this.myAgent));
-//			System.out.println("_______________________");
+			//			Context<Object> context = ContextUtils.getContext(this.myAgent);
+			//			System.out.println("ENTREAERAERERAEAR");
+			//			objs = context.getObjects(Slender.class);
+			//			iter = objs.iterator();
+			//			System.out.println(grid.getLocation(((Slender) iter.next())));
+			//			System.out.println(grid.getLocation(this.myAgent));
+			//			System.out.println("_______________________");
 			GridPoint pt = grid.getLocation(this.getAgent());
 			objs = grid.getObjectsAt(pt.getX(), pt.getY());
 			iter = objs.iterator();
@@ -127,10 +139,46 @@ public class Player extends Agent {
 		}
 	}
 
+	public int getLightPeriod() {
+		return this.lightPeriod;
+	}
+
+	public int getDarknessPeriod() {
+		return this.darknessPeriod;
+	}
+
+	public void setLightPeriod(int p) {
+		this.lightPeriod = p;
+	}
+
+	public void setDarknessPeriod(int p) {
+		this.darknessPeriod = p;
+	}
+
+	public void turnMobileOff() {
+		this.mobileOn = true;
+	}
+
+	public void turnMobileOn() {
+		this.mobileOn = false;
+	}
+
+	public boolean isSlenderNear() {
+		return false;
+	}
+
+	public void escape() {
+
+	}
+
+	public void step(boolean widerRange) {
+
+	}
+
 	public boolean isAlive() {
 		return alive;
 	}
-	
+
 	@Override
 	public void doDelete() {
 		super.doDelete();
@@ -149,6 +197,40 @@ public class Player extends Agent {
 
 	public void setEnergy(int energy) {
 		this.energy = energy;
+	}
+
+	private class Exploring extends CyclicBehaviour {
+
+		Player agent = (Player)this.myAgent;
+		Random rand = new Random();
+
+		@Override
+		public void action() {
+			int lightPeriod = agent.getLightPeriod();
+			int darknessPeriod = agent.getDarknessPeriod();
+
+			if(agent.isSlenderNear()) {
+				turnMobileOff();
+				targetPoint = null;
+				agent.escape();
+			} else {
+				if(lightPeriod > 0) {
+					agent.step(true);
+					agent.setLightPeriod(lightPeriod - 1);
+				} else if(darknessPeriod > 0) {
+					agent.step(false);
+					agent.setDarknessPeriod(darknessPeriod - 1);
+				} else {
+					int newLightPeriod = rand.nextInt(5);
+					int newDarknessPeriod = rand.nextInt(5);
+					agent.setLightPeriod(newLightPeriod);
+					agent.setDarknessPeriod(newDarknessPeriod);
+				}
+			}
+
+
+		}
+
 	}
 
 }
