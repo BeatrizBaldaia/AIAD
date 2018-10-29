@@ -62,7 +62,7 @@ public class Player extends Agent {
 				Object k = iter.next();
 				if(k.getClass() == Slender.class) {
 					s = true;
-					System.out.println("NearSlender - "+this.myAgent.getName());
+//					System.out.println("NearSlender - "+this.myAgent.getName());
 					continue;
 				}
 			}
@@ -77,10 +77,22 @@ public class Player extends Agent {
 			objs = grid.getObjectsAt(pt.getX(), pt.getY());
 			iter = objs.iterator();
 			while(iter.hasNext()){
-				if(iter.next().getClass() == Slender.class) {
+				Object with_me = iter.next();
+				if(this.myAgent.equals(with_me)) {
+					break;
+				}
+				System.out.println("SOMETHING IS HERE WITH ME");
+				if(with_me.getClass() == Slender.class) {
 					s = true;
-					System.out.println("NearSlender - "+this.myAgent.getName());
-					continue;
+					System.err.println("NearSlender - "+this.myAgent.getName());
+				}
+				if(with_me.getClass() == Device.class) {
+					System.err.println("IN A CELL WITH THE DEVICE");
+					((Device) with_me).turnOff((Player) this.myAgent); 
+				}
+				if(with_me.getClass() == Recharge.class) {
+					System.out.println("IN A CELL WITH THE RECHARGE");
+					((Recharge) with_me).recharge((Player) this.myAgent); 
 				}
 			}
 			if(!s) {

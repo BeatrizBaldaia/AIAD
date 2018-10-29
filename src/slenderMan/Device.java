@@ -26,7 +26,7 @@ public class Device {
 		GridPoint pt = grid.getLocation(this);
 		GridPoint p_pt = grid.getLocation(p);
 
-		if (pt == p_pt) {
+		if (pt.getX() == p_pt.getX() && pt.getY() == p_pt.getY()) {
 			System.out.println("Turning off energy");
 			setOn(false);
 		}
