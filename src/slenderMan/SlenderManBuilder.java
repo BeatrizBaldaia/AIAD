@@ -1,8 +1,5 @@
 package slenderMan;
 
-import slenderMan.Player;
-import slenderMan.Slender;
-import jade.core.AID;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.wrapper.StaleProxyException;
@@ -35,7 +32,7 @@ public class SlenderManBuilder extends RepastSLauncher implements ContextBuilder
 	private Grid<Object> grid;
 	private ContinuousSpace<Object> space;
 	@Override
-	public Context build(Context<Object> context) {
+	public Context<?> build(Context<Object> context) {
 		this.context = context;
 		context.setId("SlenderMan");
 

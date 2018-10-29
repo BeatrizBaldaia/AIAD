@@ -1,18 +1,9 @@
 package slenderMan;
 
-import java.util.List;
-
 import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
-import repast.simphony.query.space.grid.GridCell;
-import repast.simphony.query.space.grid.GridCellNgh;
-import repast.simphony.random.RandomHelper;
-import repast.simphony.space.SpatialMath;
 import repast.simphony.space.continuous.ContinuousSpace;
-import repast.simphony.space.continuous.NdPoint;
 import repast.simphony.space.grid.Grid;
-import repast.simphony.space.grid.GridPoint;
-import repast.simphony.util.SimUtilities;
 import sajas.core.Agent;
 import sajas.core.behaviours.TickerBehaviour;
 
@@ -37,6 +28,11 @@ public class Tower extends Agent {
 	}
 	
 	private class CheckDevices extends TickerBehaviour {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 
 		public CheckDevices(Agent a, long period) {
 			super(a, period);

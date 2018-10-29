@@ -4,17 +4,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import bsh.This;
-import slenderMan.Slender;
 import repast.simphony.context.Context;
-import repast.simphony.engine.watcher.DefaultWatchData;
-import repast.simphony.engine.watcher.Watch;
-import repast.simphony.engine.watcher.Watcher2;
-import repast.simphony.engine.watcher.WatcherTriggerSchedule;
 import repast.simphony.query.space.grid.GridCell;
 import repast.simphony.query.space.grid.GridCellNgh;
 import repast.simphony.query.space.grid.MooreQuery;
-import repast.simphony.query.space.grid.VNQuery;
 import repast.simphony.random.RandomHelper;
 import repast.simphony.space.SpatialMath;
 import repast.simphony.space.continuous.ContinuousSpace;
@@ -57,7 +50,7 @@ public class Player extends Agent {
 	}
 
 	private class RunAround extends TickerBehaviour {
-
+		private static final long serialVersionUID = 1L;
 		public RunAround(Agent a, long period) {
 			super(a, period);
 			nearSlender = new MooreQuery<Object>(grid, this.myAgent, 2, 2);
@@ -186,7 +179,7 @@ public class Player extends Agent {
 	}
 
 	public void killPlayer() {
-		Context<Object> context = ContextUtils.getContext(this);
+		Context<?> context = ContextUtils.getContext(this);
 		context.remove(this);
 		doDelete();
 	}
@@ -201,6 +194,8 @@ public class Player extends Agent {
 
 	private class Exploring extends CyclicBehaviour {
 
+		private static final long serialVersionUID = 1L;
+		
 		Player agent = (Player)this.myAgent;
 		Random rand = new Random();
 
