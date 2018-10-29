@@ -22,10 +22,12 @@ public class Device {
 	}
 
 	public void turnOff(Player p) {
+		System.out.println("IN Turn off");
 		GridPoint pt = grid.getLocation(this);
 		GridPoint p_pt = grid.getLocation(p);
 
 		if (pt == p_pt) {
+			System.out.println("Turning off energy");
 			setOn(false);
 		}
 

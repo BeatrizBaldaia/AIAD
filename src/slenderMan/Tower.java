@@ -26,6 +26,8 @@ public class Tower extends Agent {
 		for(int i = 0; i < dev.length; i++) {
 			dev[i] = new Device(space, grid, i);
 			context.add(dev[i]);
+			Recharge r = new Recharge(space, grid, i);
+			context.add(r);
 		}
 	}
 

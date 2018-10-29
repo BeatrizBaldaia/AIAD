@@ -35,7 +35,7 @@ public class Player extends Agent {
 	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int energy) {
 		this.space = space;
 		this.grid = grid;
-		this.energy = startingEnergy = energy;
+		this.setEnergy(startingEnergy = energy);
 	}
 
 	@Override
@@ -99,12 +99,7 @@ public class Player extends Agent {
 					minCount = cell.size();
 				}
 			}
-
-			if (energy > 0) {
-				moveTowards(pointWithLeastSlenders);
-			} else {
-				energy = startingEnergy;
-			}
+			moveTowards(pointWithLeastSlenders);
 		}
 	}
 
@@ -117,7 +112,6 @@ public class Player extends Agent {
 			space.moveByVector(this, 2, angle, 0);
 			myPoint = space.getLocation(this);
 			grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
-			//energy--;
 		}
 	}
 
@@ -135,6 +129,14 @@ public class Player extends Agent {
 		Context<Object> context = ContextUtils.getContext(this);
 		context.remove(this);
 		doDelete();
+	}
+
+	public int getEnergy() {
+		return energy;
+	}
+
+	public void setEnergy(int energy) {
+		this.energy = energy;
 	}
 
 }
