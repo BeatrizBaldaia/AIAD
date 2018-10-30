@@ -50,6 +50,7 @@ public class Tower extends Agent {
 					if (dev[i].getTime() == 0) {
 						dev[i].setOn(false);
 						dev[i].setTime(MAX_DEVICE_TIME);
+						System.out.println(dev[i].getTime());
 					}
 
 				}
@@ -61,8 +62,14 @@ public class Tower extends Agent {
 					continue;
 				}
 			}
-//			TODO: endGame win
-			if (endGame) {
+			boolean endGameWin = true;
+			for (int i = 0; i < dev.length; i++) {
+				if (dev[i].isOn()) {
+					endGameWin = false;
+					continue;
+				}
+			}
+			if (endGame || endGameWin) {
 				System.out.println("EndGame");
 				RunEnvironment.getInstance().endRun();
 			}
