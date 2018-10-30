@@ -1,5 +1,6 @@
 package slenderMan;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -33,13 +34,16 @@ public class Player extends Agent {
 	private int energy, startingEnergy;
 
 	private int distBattery;
-	private int lightPeriod;
-	private int darknessPeriod;
-	private GridPoint targetPoint;
-	private boolean mobileOn;
+	private int lightPeriod = 0;
+	private int darknessPeriod = 0;
+	private GridPoint targetPoint = null;
+	private boolean mobileOn = false;
+	private int mobileBattery = 100;
+	private ArrayList<Device> knownDevices = new ArrayList<Device>();
 
 	static final int BIG_RADIUS = 7;
 	static final int SMALL_RADIUS = 3;
+	static final int PLAYER_SPEED = 1;
 
 	MooreQuery<Object> nearSlender;
 	private boolean alive;
@@ -52,10 +56,11 @@ public class Player extends Agent {
 
 	@Override
 	public void setup() {
-		addBehaviour(new RunAround(this, 1));
+		//addBehaviour(new RunAround(this, 1));
+		addBehaviour(new Exploring());
 		alive = true;
 	}
-
+/*
 	private class RunAround extends TickerBehaviour {
 
 		public RunAround(Agent a, long period) {
@@ -126,6 +131,7 @@ public class Player extends Agent {
 			grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
 		}
 	}
+	*/
 
 	public int getLightPeriod() {
 		return this.lightPeriod;
@@ -151,18 +157,193 @@ public class Player extends Agent {
 		this.mobileOn = false;
 	}
 
-	public boolean isSlenderNear() {
-		return false;
+	public int getMobileBattery() {
+		return this.mobileBattery;
 	}
 
-	public void escape() {
+	public void setMobileBattery(int b) {
+		this.mobileBattery = b;
+	}
+	
+	/**
+	 * Verifies if slender is in the neighborhood  
+	 * @return slender point or null if slender is not in the neighborhood
+	 */
+	public GridPoint getSlenderPosition() {
+		int radius = mobileOn ? BIG_RADIUS : SMALL_RADIUS;
+
+		GridPoint pt = grid.getLocation(this);
+
+		GridCellNgh<Slender> nghCreator = new GridCellNgh<Slender>(grid, pt, Slender.class, radius, radius);
+
+		List<GridCell<Slender>> gridCells = nghCreator.getNeighborhood(true);
+
+		GridPoint slenderPoint = null;
+		for(GridCell<Slender> cell : gridCells) {
+			if(cell.size() != 0) {
+				slenderPoint = cell.getPoint();
+				return slenderPoint;
+			}
+		}
+
+		return slenderPoint;
+	}
+
+	/**
+	 * Moves in the slender opposite direction
+	 * @param slenderPoint: slender position
+	 */
+	public void escape(GridPoint slenderPoint) {
+		NdPoint myPoint = space.getLocation(this);
+		NdPoint otherPoint = new NdPoint(slenderPoint.getX(), slenderPoint.getY());
+		double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint) + Math.PI; //mover no sentido oposto ao slender (+PI)
+		space.moveByVector(this, PLAYER_SPEED, angle);
+		myPoint = space.getLocation(this);
+		grid.moveTo(this, (int)myPoint.getX(), (int)myPoint.getY());
+	}
+
+	/**
+	 * Normal player move
+	 */
+	public void move() {
+		if(this.targetPoint == null) {
+			findTarget();
+		}
+		moveForward();
+		checkDestiny();
+	}
+
+	/**
+	 * Take a step
+	 */
+	public void moveForward() {
+		GridPoint myPt = grid.getLocation(this);
+
+		if(this.targetPoint == null) {//random move
+			GridCellNgh<Object> nghCreator = new GridCellNgh<Object>(grid, myPt, Object.class, PLAYER_SPEED, PLAYER_SPEED);
+			List<GridCell<Object>> gridCells = nghCreator.getNeighborhood(false);
+			SimUtilities.shuffle(gridCells,  RandomHelper.getUniform());
+			GridPoint otherPoint = gridCells.get(0).getPoint();
+			spacialMove(otherPoint);
+		} else {
+			spacialMove(this.targetPoint);
+		}
+	}
+	
+	/**
+	 * See if player reached his destiny (target point)
+	 */
+	public void checkDestiny() {
+		if(this.targetPoint == null) {
+			return;
+		}
+		GridPoint myPt = grid.getLocation(this);
+		if(myPt.getX() == targetPoint.getX() && myPt.getY() == targetPoint.getY()) {
+			Iterator<Object> iter = grid.getObjectsAt(myPt.getX(), myPt.getY()).iterator();
+			while(iter.hasNext()) {
+				Object element = iter.next();
+				if(element.getClass() == Device.class) {
+					if(!knownDevices.contains(element)) {
+						knownDevices.add((Device)element);
+						//TODO: mandar mensagem aos outros com a localizacao do dispositivo encontrado
+					}
+				} //TODO: else para quando a class e Battery
+			}
+			this.targetPoint = null;
+		}
+	}
+
+	/**
+	 * Place the player in the space, updating his position
+	 * @param pt : player's final position
+	 */
+	public void spacialMove(GridPoint pt) {
+		NdPoint myPoint = space.getLocation(this);
+		NdPoint otherPoint = new NdPoint(pt.getX(), pt.getY());
+		double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint);
+		double dist = grid.getDistance(grid.getLocation(this), pt);
+		dist = dist < PLAYER_SPEED ? dist : PLAYER_SPEED;
+		space.moveByVector(this, dist, angle);
+		myPoint = space.getLocation(this);
+		grid.moveTo(this, (int)myPoint.getX(), (int)myPoint.getY());
 
 	}
 
-	public void step(boolean widerRange) {
+	/**
+	 * Try to find a target (device or battery) in the neighborhood
+	 */
+	public void findTarget() {
+		int radius = mobileOn ? BIG_RADIUS : SMALL_RADIUS;
 
+		GridPoint myPt = grid.getLocation(this);
+
+		GridCellNgh<Device> nghCreator = new GridCellNgh<Device>(grid, myPt, Device.class, radius, radius);
+
+		List<GridCell<Device>> gridCells = nghCreator.getNeighborhood(true);
+
+		double nearestDeviceDist = Double.MAX_VALUE;
+		GridPoint nearestDevice = null;
+		for(GridCell<Device> cell : gridCells) {
+			if(cell.size() != 0) {
+				GridPoint otherPt = cell.getPoint();
+				double dist = grid.getDistance(myPt, otherPt);
+				if(dist < nearestDeviceDist) {
+					Iterator<Device> iter = cell.items().iterator();
+					Device device = iter.next();
+					if(knownDevices.indexOf(device) == -1) {//ainda nao conhece este dispositivo
+						nearestDevice = otherPt;
+						nearestDeviceDist = dist;
+					}
+				}
+			}
+		}
+		this.targetPoint = nearestDevice;
 	}
 
+	private class Exploring extends CyclicBehaviour {
+
+		public Player agent;
+		public Random rand;
+
+		public Exploring() {
+			super();
+			agent = (Player)this.myAgent;
+			rand = new Random();
+		}
+
+		@Override
+		public void action() {
+
+			int lightPeriod = agent.getLightPeriod();
+			int darknessPeriod = agent.getDarknessPeriod();
+
+			GridPoint slenderPoint = agent.getSlenderPosition();
+			if(slenderPoint != null) {
+				agent.turnMobileOff();
+				targetPoint = null;
+				agent.escape(slenderPoint);
+			} else {
+				if(lightPeriod > 0) {
+					agent.move();
+					agent.setLightPeriod(lightPeriod - 1);
+					agent.setMobileBattery(agent.getMobileBattery() - 1);
+				} else if(darknessPeriod > 0) {
+					agent.turnMobileOff();
+					agent.move();
+					agent.setDarknessPeriod(darknessPeriod - 1);
+				} else {
+					int newLightPeriod = rand.nextInt(5);
+					int newDarknessPeriod = rand.nextInt(5);
+					agent.setLightPeriod(newLightPeriod);
+					agent.setDarknessPeriod(newDarknessPeriod);
+				}
+			}
+
+
+		}
+
+	}
+	
 	public boolean isAlive() {
 		return alive;
 	}
@@ -185,40 +366,6 @@ public class Player extends Agent {
 
 	public void setEnergy(int energy) {
 		this.energy = energy;
-	}
-
-	private class Exploring extends CyclicBehaviour {
-
-		Player agent = (Player)this.myAgent;
-		Random rand = new Random();
-
-		@Override
-		public void action() {
-			int lightPeriod = agent.getLightPeriod();
-			int darknessPeriod = agent.getDarknessPeriod();
-
-			if(agent.isSlenderNear()) {
-				turnMobileOff();
-				targetPoint = null;
-				agent.escape();
-			} else {
-				if(lightPeriod > 0) {
-					agent.step(true);
-					agent.setLightPeriod(lightPeriod - 1);
-				} else if(darknessPeriod > 0) {
-					agent.step(false);
-					agent.setDarknessPeriod(darknessPeriod - 1);
-				} else {
-					int newLightPeriod = rand.nextInt(5);
-					int newDarknessPeriod = rand.nextInt(5);
-					agent.setLightPeriod(newLightPeriod);
-					agent.setDarknessPeriod(newDarknessPeriod);
-				}
-			}
-
-
-		}
-
 	}
 
 }
