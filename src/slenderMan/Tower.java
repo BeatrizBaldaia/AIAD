@@ -20,9 +20,13 @@ public class Tower extends Agent {
 			Recharge r = new Recharge(space, grid, i);
 			context.add(r);
 		}
+		
 //		TODO: delete test de know all devices
 		for (int i = 0; i < players.length; i++) {
-			players[i].setDev(dev);
+			Device[] dev_test = new Device[8];
+			for(int j=0;j<dev.length;j++)
+			dev_test[j] = new Device(space.getLocation(dev[j]), grid);
+			players[i].setDev(dev_test);
 		}
 	}
 
@@ -48,8 +52,8 @@ public class Tower extends Agent {
 				if (!dev[i].isOn()) {
 					dev[i].decreaseTimer();
 					if (dev[i].getTime() == 0) {
-						dev[i].setOn(false);
-						dev[i].setTime(MAX_DEVICE_TIME);
+						dev[i].setOn(true);
+						dev[i].setTime(Tower.MAX_DEVICE_TIME);
 						System.out.println(dev[i].getTime());
 					}
 

@@ -62,7 +62,7 @@ public class Player extends Agent {
 
 		@Override
 		protected void onTick() {
-
+			updateWorld();
 			boolean s = false;
 			Iterable<Object> objs = nearSlender.query();
 			nearSlender.reset(this.myAgent, 2, 2);
@@ -126,7 +126,8 @@ public class Player extends Agent {
 		NdPoint nearestDevice = null;
 		for (int i = 0; i < dev.length; i++) {
 			if (dev[i].isOn()) {
-				NdPoint pt_dev = space.getLocation(dev[i]);
+//				NdPoint pt_dev = space.getLocation(dev[i]);
+				NdPoint pt_dev = dev[i].getPt_space();
 				double dist = space.getDistance(pt, pt_dev);
 				if (min_dist > dist) {
 					min_dist = dist;
@@ -138,6 +139,20 @@ public class Player extends Agent {
 		moveTowards(new GridPoint((int) nearestDevice.getX(), (int) nearestDevice.getY()));
 		else
 			System.err.println("Does not exist!!!");
+	}
+
+	public void updateWorld() {
+		for (int i = 0; i < dev.length; i++) {
+			if (dev[i] != null && !dev[i].isOn()) {
+				dev[i].decreaseTimer();
+				if (dev[i].getTime() == 0) {
+					dev[i].setOn(true);
+					dev[i].setTime(Tower.MAX_DEVICE_TIME);
+				}
+
+			}
+		}
+
 	}
 
 	private boolean know_all_devices() {
