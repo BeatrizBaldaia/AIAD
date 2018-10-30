@@ -38,8 +38,8 @@ public class Device {
 
 		if (pt.getX() == p_pt.getX() && pt.getY() == p_pt.getY()) {
 //			System.out.println("Turning off energy");
-			p.getDev()[this.id] = new Device(getPt_space(), grid);
-			p.getDev()[this.id].on=false;
+//			p.getDev()[this.id] = new Device(getPt_space(), grid);
+//			p.getDev()[this.id].on=false;
 			setOn(false);
 		}
 
