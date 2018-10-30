@@ -23,13 +23,15 @@ import sajas.core.behaviours.TickerBehaviour;
 public class Player extends Agent {
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
-	private int energy, startingEnergy;
-
+	private int energy;
+	private int startingEnergy;
+	private Device[] dev = new Device[8];
 	private int distBattery;
 	private int lightPeriod;
 	private int darknessPeriod;
 	private GridPoint targetPoint;
 	private boolean mobileOn;
+	private boolean knowAllDevices = false;
 
 	static final int BIG_RADIUS = 7;
 	static final int SMALL_RADIUS = 3;
@@ -67,17 +69,9 @@ public class Player extends Agent {
 				Object k = iter.next();
 				if(k.getClass() == Slender.class) {
 					s = true;
-//					System.out.println("NearSlender - "+this.myAgent.getName());
 					continue;
 				}
 			}
-			//			Context<Object> context = ContextUtils.getContext(this.myAgent);
-			//			System.out.println("ENTREAERAERERAEAR");
-			//			objs = context.getObjects(Slender.class);
-			//			iter = objs.iterator();
-			//			System.out.println(grid.getLocation(((Slender) iter.next())));
-			//			System.out.println(grid.getLocation(this.myAgent));
-			//			System.out.println("_______________________");
 			GridPoint pt = grid.getLocation(this.getAgent());
 			objs = grid.getObjectsAt(pt.getX(), pt.getY());
 			iter = objs.iterator();
@@ -96,11 +90,14 @@ public class Player extends Agent {
 					((Device) with_me).turnOff((Player) this.myAgent); 
 				}
 				if(with_me.getClass() == Recharge.class) {
-					System.out.println("IN A CELL WITH THE RECHARGE");
+					System.err.println("IN A CELL WITH THE RECHARGE");
 					((Recharge) with_me).recharge((Player) this.myAgent); 
 				}
 			}
 			if(!s) {
+				if(know_all_devices()) {
+					go_To_device();
+				}
 				return;
 			}
 
@@ -118,8 +115,36 @@ public class Player extends Agent {
 			}
 			moveTowards(pointWithLeastSlenders);
 		}
+
+	}
+	private void go_To_device() {
+		NdPoint pt = space.getLocation(this);
+		double min_dist = Double.MAX_VALUE;
+		NdPoint nearestDevice = null;
+		for(int i = 0; i < dev.length; i++) {
+			NdPoint pt_dev = space.getLocation(dev[i]);
+			double dist = space.getDistance(pt, pt_dev);
+			if(min_dist > dist) {
+				min_dist = dist;
+				nearestDevice = pt_dev;
+			}
+		}
+		moveTowards(new GridPoint((int)nearestDevice.getX(),(int)nearestDevice.getY()));
 	}
 
+	private boolean know_all_devices() {
+		if(knowAllDevices) {
+			return true;
+		}
+		for(int i = 0; i < dev.length; i++) {
+			if(dev[i] == null) {
+				return false;
+			}
+		}
+		knowAllDevices = true;
+		return knowAllDevices;
+	}
+	
 	public void moveTowards(GridPoint pt) {
 		// only move if we are not already in this grid location
 		if (!pt.equals(grid.getLocation(this))) {
@@ -190,6 +215,14 @@ public class Player extends Agent {
 
 	public void setEnergy(int energy) {
 		this.energy = energy;
+	}
+
+	public Device[] getDev() {
+		return dev;
+	}
+
+	public void setDev(Device[] dev) {
+		this.dev = dev;
 	}
 
 	private class Exploring extends CyclicBehaviour {
