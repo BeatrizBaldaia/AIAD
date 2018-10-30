@@ -5,17 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import bsh.This;
-import slenderMan.Slender;
 import repast.simphony.context.Context;
-import repast.simphony.engine.watcher.DefaultWatchData;
-import repast.simphony.engine.watcher.Watch;
-import repast.simphony.engine.watcher.Watcher2;
-import repast.simphony.engine.watcher.WatcherTriggerSchedule;
 import repast.simphony.query.space.grid.GridCell;
 import repast.simphony.query.space.grid.GridCellNgh;
 import repast.simphony.query.space.grid.MooreQuery;
-import repast.simphony.query.space.grid.VNQuery;
 import repast.simphony.random.RandomHelper;
 import repast.simphony.space.SpatialMath;
 import repast.simphony.space.continuous.ContinuousSpace;
@@ -31,20 +24,24 @@ import sajas.core.behaviours.TickerBehaviour;
 public class Player extends Agent {
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
-	private int energy, startingEnergy;
-
+	private int energy;
+	private int startingEnergy;
+	private Device[] dev = new Device[8];
 	private int distBattery;
+
 	private int lightPeriod = 0;
 	private int darknessPeriod = 0;
 	private GridPoint targetPoint = null;
 	private boolean mobileOn = false;
 	private int mobileBattery = 100;
 	private ArrayList<Device> knownDevices = new ArrayList<Device>();
+	private boolean knowAllDevices = false;
 
 	static final int BIG_RADIUS = 7;
 	static final int SMALL_RADIUS = 3;
 	static final int PLAYER_SPEED = 1;
 
+	private static final double MOVE_DIST = 2;
 	MooreQuery<Object> nearSlender;
 	private boolean alive;
 
@@ -62,6 +59,7 @@ public class Player extends Agent {
 	}
 /*
 	private class RunAround extends TickerBehaviour {
+		private static final long serialVersionUID = 1L;
 
 		public RunAround(Agent a, long period) {
 			super(a, period);
@@ -70,37 +68,44 @@ public class Player extends Agent {
 
 		@Override
 		protected void onTick() {
-
+			updateWorld();
 			boolean s = false;
 			Iterable<Object> objs = nearSlender.query();
-			nearSlender.reset(this.myAgent, 2,2);
+			nearSlender.reset(this.myAgent, 2, 2);
 			Iterator<Object> iter = objs.iterator();
-			while(iter.hasNext()){
+			while (iter.hasNext()) {
 				Object k = iter.next();
-				if(k.getClass() == Slender.class) {
+				if (k.getClass() == Slender.class) {
 					s = true;
-					System.out.println("NearSlender - "+this.myAgent.getName());
 					continue;
 				}
 			}
-			//			Context<Object> context = ContextUtils.getContext(this.myAgent);
-			//			System.out.println("ENTREAERAERERAEAR");
-			//			objs = context.getObjects(Slender.class);
-			//			iter = objs.iterator();
-			//			System.out.println(grid.getLocation(((Slender) iter.next())));
-			//			System.out.println(grid.getLocation(this.myAgent));
-			//			System.out.println("_______________________");
 			GridPoint pt = grid.getLocation(this.getAgent());
 			objs = grid.getObjectsAt(pt.getX(), pt.getY());
 			iter = objs.iterator();
-			while(iter.hasNext()){
-				if(iter.next().getClass() == Slender.class) {
+			while (iter.hasNext()) {
+				Object with_me = iter.next();
+				if (this.myAgent.equals(with_me)) {
+					break;
+				}
+//				System.out.println("SOMETHING IS HERE WITH ME");
+				if (with_me.getClass() == Slender.class) {
 					s = true;
-					System.out.println("NearSlender - "+this.myAgent.getName());
-					continue;
+//					System.err.println("NearSlender - " + this.myAgent.getName());
+				}
+				if (with_me.getClass() == Device.class) {
+//					System.err.println("IN A CELL WITH THE DEVICE");
+					((Device) with_me).turnOff((Player) this.myAgent);
+				}
+				if (with_me.getClass() == Recharge.class) {
+//					System.err.println("IN A CELL WITH THE RECHARGE");
+					((Recharge) with_me).recharge((Player) this.myAgent);
 				}
 			}
-			if(!s) {
+			if (!s) {
+				if (know_all_devices()) {
+					go_To_device();
+				}
 				return;
 			}
 
@@ -118,6 +123,55 @@ public class Player extends Agent {
 			}
 			moveTowards(pointWithLeastSlenders);
 		}
+
+	}
+
+	private void go_To_device() {
+		NdPoint pt = space.getLocation(this);
+		double min_dist = Double.MAX_VALUE;
+		NdPoint nearestDevice = null;
+		for (int i = 0; i < dev.length; i++) {
+			if (dev[i].isOn()) {
+//				NdPoint pt_dev = space.getLocation(dev[i]);
+				NdPoint pt_dev = dev[i].getPt_space();
+				double dist = space.getDistance(pt, pt_dev);
+				if (min_dist > dist) {
+					min_dist = dist;
+					nearestDevice = pt_dev;
+				}
+			}
+		}
+		if(nearestDevice != null)
+		moveTowards(new GridPoint((int) nearestDevice.getX(), (int) nearestDevice.getY()));
+		else
+			System.err.println("Does not exist!!!");
+	}
+
+	public void updateWorld() {
+		for (int i = 0; i < dev.length; i++) {
+			if (dev[i] != null && !dev[i].isOn()) {
+				dev[i].decreaseTimer();
+				if (dev[i].getTime() == 0) {
+					dev[i].setOn(true);
+					dev[i].setTime(Tower.MAX_DEVICE_TIME);
+				}
+
+			}
+		}
+
+	}
+
+	private boolean know_all_devices() {
+		if (knowAllDevices) {
+			return true;
+		}
+		for (int i = 0; i < dev.length; i++) {
+			if (dev[i] == null) {
+				return false;
+			}
+		}
+		knowAllDevices = true;
+		return knowAllDevices;
 	}
 
 	public void moveTowards(GridPoint pt) {
@@ -126,13 +180,15 @@ public class Player extends Agent {
 			NdPoint myPoint = space.getLocation(this);
 			NdPoint otherPoint = new NdPoint(pt.getX(), pt.getY());
 			double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint);
-			space.moveByVector(this, 2, angle, 0);
+			double dist = space.getDistance(myPoint, otherPoint);
+			dist = (dist < MOVE_DIST )? dist : MOVE_DIST;
+			space.moveByVector(this, dist, angle, 0);
 			myPoint = space.getLocation(this);
 			grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
 		}
 	}
-	*/
 
+	*/
 	public int getLightPeriod() {
 		return this.lightPeriod;
 	}
@@ -355,7 +411,7 @@ public class Player extends Agent {
 	}
 
 	public void killPlayer() {
-		Context<Object> context = ContextUtils.getContext(this);
+		Context<?> context = ContextUtils.getContext(this);
 		context.remove(this);
 		doDelete();
 	}
@@ -366,6 +422,14 @@ public class Player extends Agent {
 
 	public void setEnergy(int energy) {
 		this.energy = energy;
+	}
+
+	public Device[] getDev() {
+		return dev;
+	}
+
+	public void setDev(Device[] dev) {
+		this.dev = dev;
 	}
 
 }
