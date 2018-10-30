@@ -54,7 +54,7 @@ public class Player extends Agent {
 	@Override
 	public void setup() {
 		//addBehaviour(new RunAround(this, 1));
-		addBehaviour(new Exploring());
+		addBehaviour(new Exploring(this));
 		alive = true;
 	}
 /*
@@ -253,7 +253,7 @@ public class Player extends Agent {
 		NdPoint myPoint = space.getLocation(this);
 		NdPoint otherPoint = new NdPoint(slenderPoint.getX(), slenderPoint.getY());
 		double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint) + Math.PI; //mover no sentido oposto ao slender (+PI)
-		space.moveByVector(this, PLAYER_SPEED, angle);
+		space.moveByVector(this, PLAYER_SPEED, angle, 0);
 		myPoint = space.getLocation(this);
 		grid.moveTo(this, (int)myPoint.getX(), (int)myPoint.getY());
 	}
@@ -319,7 +319,7 @@ public class Player extends Agent {
 		double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint);
 		double dist = grid.getDistance(grid.getLocation(this), pt);
 		dist = dist < PLAYER_SPEED ? dist : PLAYER_SPEED;
-		space.moveByVector(this, dist, angle);
+		space.moveByVector(this, dist, angle, 0);
 		myPoint = space.getLocation(this);
 		grid.moveTo(this, (int)myPoint.getX(), (int)myPoint.getY());
 
@@ -361,8 +361,8 @@ public class Player extends Agent {
 		public Player agent;
 		public Random rand;
 
-		public Exploring() {
-			super();
+		public Exploring(Agent a) {
+			super(a);
 			agent = (Player)this.myAgent;
 			rand = new Random();
 		}
