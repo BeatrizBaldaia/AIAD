@@ -175,9 +175,9 @@ public class Player extends Agent {
 					((Device) element).turnOff(this);
 					//TODO: desclaim device
 					if (!knownDevices.contains(element)) {
-						System.out.println(this.getName() + " encontrou um novo dispositivo " + ((Device)element).getID());
+//						System.out.println(this.getName() + " encontrou um novo dispositivo " + ((Device)element).getID());
 						knownDevices.add((Device) element);
-						System.out.println("Adding to known");
+//						System.out.println("Adding to known");
 						// TODO: mandar mensagem aos outros com a localizacao do dispositivo encontrado
 					}
 				} else if(element.getClass() == Recharge.class) {
@@ -195,7 +195,7 @@ public class Player extends Agent {
 	 * Player is next to a recharger and so is going to recharge his mobile
 	 */
 	public void rechargeMobile() {
-		System.out.println(this.getName() + " a carregar...");
+//		System.out.println(this.getName() + " a carregar...");
 		mobileBattery += BATTERY_PER_TICK;
 		if(mobileBattery >= 100) {
 			mobileBattery = 100;
@@ -229,7 +229,7 @@ public class Player extends Agent {
 	 */
 	public void findTarget() {		
 		if (knownDevices.size() == Tower.NUMBER_OF_DEVICES) {
-			System.out.println("I know all devices");
+//			System.out.println("I know all devices");
 			findDeviceToTurnOff();
 			return;
 		}
@@ -295,7 +295,7 @@ public class Player extends Agent {
 	public boolean needsToRecharge() {
 		if(mobileBattery <= BIG_RADIUS) {
 			goingToRecharge = true;
-			System.out.println(this.getName() + " precisa de recarregar! Bateria = " + mobileBattery);
+//			System.out.println(this.getName() + " precisa de recarregar! Bateria = " + mobileBattery);
 			return true;
 		}
 		return false;
@@ -401,8 +401,8 @@ public class Player extends Agent {
 
 			int lightPeriod = agent.getLightPeriod();
 			int darknessPeriod = agent.getDarknessPeriod();
-			if(knownDevices.size() == 8) {
-				System.out.println(agent.getName() + " ENCONTROU TODOS OS DISPOSITIVOS");
+			if(knownDevices.size() == Tower.NUMBER_OF_DEVICES) {
+//				System.out.println(agent.getName() + " ENCONTROU TODOS OS DISPOSITIVOS");
 			}
 
 			GridPoint slenderPoint = agent.getSlenderPosition();

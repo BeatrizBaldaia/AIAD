@@ -17,7 +17,7 @@ import sajas.core.behaviours.CyclicBehaviour;
 import sajas.core.behaviours.TickerBehaviour;
 
 public class Slender extends Agent {
-	private static final double SLENDER_SPEED = 1.2;
+	private static final double SLENDER_SPEED = 1.7;
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
 
