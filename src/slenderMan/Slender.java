@@ -13,15 +13,16 @@ import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridPoint;
 import repast.simphony.util.SimUtilities;
 import sajas.core.Agent;
+import sajas.core.behaviours.CyclicBehaviour;
 import sajas.core.behaviours.TickerBehaviour;
 
 public class Slender extends Agent {
-	private static final double SLENDER_SPEED = 3;
+	private static final double SLENDER_SPEED = 1.2;
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
 
-	static final int BIG_RADIUS = 10;
-	static final int SMALL_RADIUS = 5;
+	static final int BIG_RADIUS = 6;
+	static final int SMALL_RADIUS = 2;
 
 	public Slender(ContinuousSpace<Object> space, Grid<Object> grid) {
 		this.space = space;
@@ -30,19 +31,21 @@ public class Slender extends Agent {
 
 	@Override
 	public void setup() {
-		addBehaviour(new RunAround(this, 1));
+		addBehaviour(new RunAround(this));
 	}
 
-	private class RunAround extends TickerBehaviour {
+	private class RunAround extends CyclicBehaviour {
 
 		private static final long serialVersionUID = 1L;
 
-		public RunAround(Agent a, long period) {
-			super(a, period);
+		public RunAround(Agent a) {
+			super(a);
 		}
 
-		@Override
-		protected void onTick() {
+//		@Override
+//		protected void onTick() {
+			@Override
+			public void action() {
 			GridPoint pointWithNearestPlayer = null;
 			GridPoint pt = grid.getLocation(this.getAgent());
 			List<Player> players = getPlayerWithPhone(pt);

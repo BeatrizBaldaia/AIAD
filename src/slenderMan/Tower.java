@@ -5,6 +5,7 @@ import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.grid.Grid;
 import sajas.core.Agent;
+import sajas.core.behaviours.CyclicBehaviour;
 import sajas.core.behaviours.TickerBehaviour;
 
 public class Tower extends Agent {
@@ -25,19 +26,21 @@ public class Tower extends Agent {
 
 	@Override
 	public void setup() {
-		addBehaviour(new CheckDevices(this, 1));
+		addBehaviour(new CheckDevices(this));
 	}
 
-	private class CheckDevices extends TickerBehaviour {
+	private class CheckDevices extends CyclicBehaviour {
 
 		private static final long serialVersionUID = 1L;
 
-		public CheckDevices(Agent a, long period) {
-			super(a, period);
+		public CheckDevices(Agent a) {
+			super(a);
 		}
 
-		@Override
-		protected void onTick() {
+//		@Override
+//		protected void onTick() {
+			@Override
+			public void action() {
 			for (int i = 0; i < dev.length; i++) {
 				if (!dev[i].isOn()) {
 					dev[i].decreaseTimer();

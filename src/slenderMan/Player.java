@@ -45,7 +45,7 @@ public class Player extends Agent {
 	static final int SMALL_RADIUS = 3;
 	static final int PLAYER_SPEED = 1;
 
-	MooreQuery<Object> nearSlender;
+//	MooreQuery<Object> nearSlender;
 	private boolean alive;
 	private ArrayList<Device> claimedDevices = new ArrayList<Device>();;
 
@@ -177,6 +177,7 @@ public class Player extends Agent {
 					//TODO: desclaim device
 					if (!knownDevices.contains(element)) {
 						knownDevices.add((Device) element);
+						System.out.println("Adding to known");
 						knowAllDevices = (knownDevices.size() == Tower.NUMBER_OF_DEVICES);
 						// TODO: mandar mensagem aos outros com a localizacao do dispositivo encontrado
 					}
