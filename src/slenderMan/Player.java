@@ -25,11 +25,6 @@ public class Player extends Agent {
 	private Grid<Object> grid;
 	private Device[] dev = new Device[8];
 
-	private int energy;
-	private int startingEnergy;
-	//	private Device[] dev = new Device[Tower.NUMBER_OF_DEVICES];
-	private int distBattery;
-
 	private int lightPeriod = 0;
 	private int darknessPeriod = 0;
 	private GridPoint targetPoint = null;
@@ -40,15 +35,11 @@ public class Player extends Agent {
 	private boolean recharging = false;
 	private ArrayList<Device> knownDevices = new ArrayList<Device>();
 
-	private boolean knowAllDevices = false;
-
 	static final int BIG_RADIUS = 7;
 	static final int SMALL_RADIUS = 3;
 	static final int PLAYER_SPEED = 1;
+	static final int BATTERY_PER_TICK = 20;
 
-
-	private static final double MOVE_DIST = 2;
-	MooreQuery<Object> nearSlender;
 	private boolean alive;
 	private ArrayList<Device> claimedDevices = new ArrayList<Device>();;
 
@@ -146,7 +137,7 @@ public class Player extends Agent {
 		NdPoint otherPoint = new NdPoint(slenderPoint.getX(), slenderPoint.getY());
 		double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint) + Math.PI; // mover no sentido oposto ao slender (+PI)
 		space.moveByVector(this, PLAYER_SPEED, angle, 0);
-		myPoint = space.getLocation(this);
+		myPoint = space.getLocation(this); 
 		grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
 	}
 
@@ -195,8 +186,8 @@ public class Player extends Agent {
 					((Device) element).turnOff(this);
 					//TODO: desclaim device
 					if (!knownDevices.contains(element)) {
+						System.out.println(this.getName() + " encontrou um novo dispositivo " + ((Device)element).getID());
 						knownDevices.add((Device) element);
-						knowAllDevices = (knownDevices.size() == Tower.NUMBER_OF_DEVICES);
 						// TODO: mandar mensagem aos outros com a localizacao do dispositivo encontrado
 					}
 				} else if(element.getClass() == Recharge.class) {
@@ -214,8 +205,10 @@ public class Player extends Agent {
 	 * Player is next to a recharger and so is going to recharge his mobile
 	 */
 	public void rechargeMobile() {
-		mobileBattery += 20;
-		if(mobileBattery == 100) {
+		System.out.println(this.getName() + " a carregar...");
+		mobileBattery += BATTERY_PER_TICK;
+		if(mobileBattery >= 100) {
+			mobileBattery = 100;
 			recharging = false;
 		}
 	}
@@ -231,8 +224,11 @@ public class Player extends Agent {
 		NdPoint otherPoint = new NdPoint(pt.getX(), pt.getY());
 		double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint);
 		double dist = grid.getDistance(grid.getLocation(this), pt);
-		dist = dist < PLAYER_SPEED ? dist : PLAYER_SPEED;
-		space.moveByVector(this, dist, angle, 0);
+		if(dist <= PLAYER_SPEED) {
+			space.moveTo(this, otherPoint.getX(), otherPoint.getY());
+		} else {
+			space.moveByVector(this, PLAYER_SPEED, angle, 0);
+		}
 		myPoint = space.getLocation(this);
 		grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
 
@@ -247,11 +243,11 @@ public class Player extends Agent {
 				return;
 			}
 		}
-		/*if (knowAllDevices) {
+		if (knownDevices.size() == 8) {
 			System.out.println("I know all devices");
 			findDeviceToTurnOff();
 			return;
-		}*/
+		}
 
 		GridPoint myPt = grid.getLocation(this);
 		int radius = mobileOn ? BIG_RADIUS : SMALL_RADIUS;
@@ -308,6 +304,7 @@ public class Player extends Agent {
 	public boolean needsToRecharge() {
 		if(mobileBattery <= BIG_RADIUS) {
 			goingToRecharge = true;
+			System.out.println(this.getName() + " precisa de recarregar! Bateria = " + mobileBattery);
 			return true;
 		}
 		return false;
@@ -417,6 +414,9 @@ public class Player extends Agent {
 
 			int lightPeriod = agent.getLightPeriod();
 			int darknessPeriod = agent.getDarknessPeriod();
+			if(knownDevices.size() == 8) {
+				System.out.println(agent.getName() + " ENCONTROU TODOS OS DISPOSITIVOS");
+			}
 
 			GridPoint slenderPoint = agent.getSlenderPosition();
 			if (slenderPoint != null) {
@@ -498,14 +498,6 @@ public class Player extends Agent {
 
 	public void setDev(Device[] dev) {
 		this.dev = dev;
-	}
-
-	public int getEnergy() {
-		return energy;
-	}
-
-	public void setEnergy(int energy) {
-		this.energy = energy;
 	}
 
 }

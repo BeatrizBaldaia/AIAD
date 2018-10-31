@@ -72,4 +72,8 @@ public class Device {
 	public void setPt_space(NdPoint pt_space) {
 		this.pt_space = pt_space;
 	}
+	
+	public int getID() {
+		return this.id;
+	}
 }
