@@ -9,7 +9,8 @@ import sajas.core.behaviours.TickerBehaviour;
 
 public class Tower extends Agent {
 	static final int MAX_DEVICE_TIME = 200;
-	private Device[] dev = new Device[8];
+	static final int NUMBER_OF_DEVICES = 8;
+	private Device[] dev = new Device[NUMBER_OF_DEVICES];
 	private Player[] players;
 
 	public Tower(ContinuousSpace<Object> space, Grid<Object> grid, Context<Object> context, Player[] players) {
@@ -21,13 +22,13 @@ public class Tower extends Agent {
 			context.add(r);
 		}
 		
-//		TODO: delete test de know all devices
-		for (int i = 0; i < players.length; i++) {
-			Device[] dev_test = new Device[8];
-			for(int j=0;j<dev.length;j++)
-			dev_test[j] = new Device(space.getLocation(dev[j]), grid);
-			players[i].setDev(dev_test);
-		}
+////		TODO: delete test de know all devices
+//		for (int i = 0; i < players.length; i++) {
+//			Device[] dev_test = new Device[NUMBER_OF_DEVICES];
+//			for(int j=0;j<dev.length;j++)
+//			dev_test[j] = new Device(space.getLocation(dev[j]), grid);
+//			players[i].setDev(dev_test);
+//		}
 	}
 
 	@Override
