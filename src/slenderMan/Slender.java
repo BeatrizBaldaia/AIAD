@@ -16,12 +16,12 @@ import sajas.core.Agent;
 import sajas.core.behaviours.TickerBehaviour;
 
 public class Slender extends Agent {
-	private static final double SLENDER_SPEED = 1;
+	private static final double SLENDER_SPEED = 3;
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
 
-	static final int BIG_RADIUS = 7;
-	static final int SMALL_RADIUS = 3;
+	static final int BIG_RADIUS = 10;
+	static final int SMALL_RADIUS = 5;
 
 	public Slender(ContinuousSpace<Object> space, Grid<Object> grid) {
 		this.space = space;
@@ -43,54 +43,67 @@ public class Slender extends Agent {
 
 		@Override
 		protected void onTick() {
+			GridPoint pointWithNearestPlayer = null;
 			GridPoint pt = grid.getLocation(this.getAgent());
-			GridPoint pointWithMostPlayers = getPointWithMostPlayerWithPhone(pt);
-			if(pointWithMostPlayers == null) {
+			List<Player> players = getPlayerWithPhone(pt);
+			if (players.size() == 0) {
+				players = getPlayerWithoutPhone(pt);
 			}
-			moveTowards(pointWithMostPlayers);
+			if(players.size() != 0) {
+				pointWithNearestPlayer = getPointWithNearestPlayer(players);
+			} else {
+				GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, pt, Player.class, SMALL_RADIUS, SMALL_RADIUS);
+				List<GridCell<Player>> gridCells = nghCreator.getNeighborhood(true);
+				pointWithNearestPlayer = gridCells.get(RandomHelper.nextIntFromTo(0, gridCells.size()-1)).getPoint();
+			}
+			moveTowards(pointWithNearestPlayer);
 			infect();
 		}
 
+
+
 	}
-	public GridPoint getPointWithMostPlayerWithPhone(GridPoint pt) {
-		GridPoint pt_res = null;
+	private List<Player> getPlayerWithoutPhone(GridPoint pt) {
+		GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, pt, Player.class, SMALL_RADIUS, SMALL_RADIUS);
+		List<GridCell<Player>> gridCells = nghCreator.getNeighborhood(true);
+
+		List<Player> players = new ArrayList<Player>();
+		for (GridCell<Player> cell : gridCells) {
+			for (Player p : cell.items()) {
+					players.add(p);
+			}
+		}
+		return players;
+	}
+	public GridPoint getPointWithNearestPlayer(List<Player> players) {
+		double nearestPlayer = Double.MAX_VALUE;
+		NdPoint pt_res = null;
+		NdPoint pt_me = space.getLocation(this);
+		for (Player p : players) {
+			NdPoint pt_p = space.getLocation(p);
+			double dist = space.getDistance(pt_me, pt_p);
+			if(dist < nearestPlayer) {
+				nearestPlayer = dist;
+				pt_res = pt_p;
+			}
+		}
+		return new GridPoint((int)pt_res.getX(),(int)pt_res.getY());
+	}
+
+	public List<Player> getPlayerWithPhone(GridPoint pt) {
 		GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, pt, Player.class, BIG_RADIUS, BIG_RADIUS);
 		List<GridCell<Player>> gridCells = nghCreator.getNeighborhood(true);
-		SimUtilities.shuffle(gridCells, RandomHelper.getUniform());
-
-		gridCells = takeout_players_without_phone(gridCells);
-
-		return pt_res;
-	}
-	public GridPoint getPointWithMostPlayerWithoutPhone() {
-		GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, pt, Player.class, 1, 1);
-		List<GridCell<Player>> gridCells = nghCreator.getNeighborhood(true);
-		SimUtilities.shuffle(gridCells, RandomHelper.getUniform());
-
-		GridPoint pointWithMostPlayers = null;
-		int maxCount = -1;
+		List<Player> players = new ArrayList<Player>();
 		for (GridCell<Player> cell : gridCells) {
-			if (cell.size() > maxCount) {
-				pointWithMostPlayers = cell.getPoint();
-				maxCount = cell.size();
+			for (Player p : cell.items()) {
+				if (p.isMobileOn()) {
+					players.add(p);
+				}
 			}
 		}
-		GridPoint pointWithMostPlayers = null;
-		int maxCount = -1;
-		for (GridCell<Player> cell : gridCells) {
-			if (cell.size() > maxCount) {
-				pointWithMostPlayers = cell.getPoint();
-				maxCount = cell.size();
-			}
-		}
-		return null;
+		return players;
 	}
-
-	private List<GridCell<Player>> takeout_players_without_phone(List<GridCell<Player>> gridCells) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 	public void moveTowards(GridPoint pt) {
 		// only move if we are not already in this grid location
 		if (!pt.equals(grid.getLocation(this))) {
@@ -99,13 +112,11 @@ public class Slender extends Agent {
 			double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint);
 			double dist = space.getDistance(myPoint, otherPoint);
 			dist = (dist < SLENDER_SPEED) ? dist : SLENDER_SPEED;
-			space.moveByVector(this, 1, angle, 0);
+			space.moveByVector(this, dist, angle, 0);
 			myPoint = space.getLocation(this);
 			grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
 		}
 	}
-
-	
 
 	public void infect() {
 		GridPoint pt = grid.getLocation(this);
