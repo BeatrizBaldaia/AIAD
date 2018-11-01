@@ -1,6 +1,7 @@
 package slenderMan;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import repast.simphony.query.space.grid.GridCell;
@@ -17,111 +18,168 @@ import sajas.core.behaviours.CyclicBehaviour;
 import sajas.core.behaviours.TickerBehaviour;
 
 public class Slender extends Agent {
-	private static final double SLENDER_SPEED = 1.7;
+	private static double RUNNING_SPEED = 1.3;
+	private static double WALKING_SPEED = 1;
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
 
-	static final int BIG_RADIUS = 6;
-	static final int SMALL_RADIUS = 2;
+	static int RADIUS = 3;
 
-	public Slender(ContinuousSpace<Object> space, Grid<Object> grid) {
+	public Slender(ContinuousSpace<Object> space, Grid<Object> grid, int radius, double running, double walking) {
 		this.space = space;
 		this.grid = grid;
+		RADIUS = radius;
+		RUNNING_SPEED = running;
+		WALKING_SPEED = walking;
 	}
 
 	@Override
 	public void setup() {
-		addBehaviour(new RunAround(this));
+		addBehaviour(new Hunting(this));
 	}
 
-	private class RunAround extends CyclicBehaviour {
+	private class Hunting extends CyclicBehaviour {
 
 		private static final long serialVersionUID = 1L;
 
-		public RunAround(Agent a) {
+		public Hunting(Agent a) {
 			super(a);
 		}
 
-//		@Override
-//		protected void onTick() {
 			@Override
 			public void action() {
-			GridPoint pointWithNearestPlayer = null;
-			GridPoint pt = grid.getLocation(this.getAgent());
-			List<Player> players = getPlayerWithPhone(pt);
-			if (players.size() == 0) {
-				players = getPlayerWithoutPhone(pt);
+				Slender agent = (Slender)this.getAgent();
+				GridPoint myPt = grid.getLocation(agent);
+				
+				Player player = agent.getNearestPlayer(myPt);
+			Player playerWithPhone = agent.getNearestPlayerWithPhone(myPt);
+			System.out.println("-----------------------------------");
+			Player prey = agent.choosePrey(player, playerWithPhone, myPt);
+			if(player == null) {
+				System.out.println("No player");
 			}
-			if(players.size() != 0) {
-				pointWithNearestPlayer = getPointWithNearestPlayer(players);
+			if(playerWithPhone == null) {
+				System.out.println("No player with phone");
+			}
+			if(prey != null) {
+				if(player != null) {
+					System.out.println("Nearest Player: " + player.getName());
+					System.out.println("	" + grid.getDistance(myPt, grid.getLocation(player)));
+				}
+				if(playerWithPhone != null) {
+					System.out.println("Player with phone: " + playerWithPhone.getName());
+					System.out.println("	" + grid.getDistance(myPt, grid.getLocation(playerWithPhone)));
+				}
+				System.out.println("Prey: " + prey.getName());
 			} else {
-				GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, pt, Player.class, SMALL_RADIUS, SMALL_RADIUS);
-				List<GridCell<Player>> gridCells = nghCreator.getNeighborhood(true);
-				pointWithNearestPlayer = gridCells.get(RandomHelper.nextIntFromTo(0, gridCells.size()-1)).getPoint();
+				//System.out.println("Random move");
 			}
-			moveTowards(pointWithNearestPlayer);
-			infect();
+			
+			
+			if(prey == null) {
+				agent.randomMove(myPt);
+			} else {
+				agent.moveTowards(myPt, grid.getLocation(prey), RUNNING_SPEED);
+			}
+			
+			kill();
 		}
 
 
 
-	}
-	private List<Player> getPlayerWithoutPhone(GridPoint pt) {
-		GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, pt, Player.class, SMALL_RADIUS, SMALL_RADIUS);
+	}	
+	
+	public Player getNearestPlayer(GridPoint myPt) {
+		GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, myPt, Player.class, RADIUS, RADIUS);
 		List<GridCell<Player>> gridCells = nghCreator.getNeighborhood(true);
 
-		List<Player> players = new ArrayList<Player>();
+		double nearestPlayerDist = Double.MAX_VALUE;
+		Player nearestPlayer = null;
 		for (GridCell<Player> cell : gridCells) {
-			for (Player p : cell.items()) {
-					players.add(p);
-			}
-		}
-		return players;
-	}
-	public GridPoint getPointWithNearestPlayer(List<Player> players) {
-		double nearestPlayer = Double.MAX_VALUE;
-		NdPoint pt_res = null;
-		NdPoint pt_me = space.getLocation(this);
-		for (Player p : players) {
-			NdPoint pt_p = space.getLocation(p);
-			double dist = space.getDistance(pt_me, pt_p);
-			if(dist < nearestPlayer) {
-				nearestPlayer = dist;
-				pt_res = pt_p;
-			}
-		}
-		return new GridPoint((int)pt_res.getX(),(int)pt_res.getY());
-	}
-
-	public List<Player> getPlayerWithPhone(GridPoint pt) {
-		GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, pt, Player.class, BIG_RADIUS, BIG_RADIUS);
-		List<GridCell<Player>> gridCells = nghCreator.getNeighborhood(true);
-		List<Player> players = new ArrayList<Player>();
-		for (GridCell<Player> cell : gridCells) {
-			for (Player p : cell.items()) {
-				if (p.isMobileOn()) {
-					players.add(p);
+			if (cell.size() != 0) {
+				GridPoint otherPt = cell.getPoint();
+				double dist = grid.getDistance(myPt, otherPt);
+				if(dist < nearestPlayerDist) {
+					nearestPlayerDist = dist;
+					nearestPlayer = cell.items().iterator().next();
 				}
 			}
 		}
-		return players;
+		return nearestPlayer;
+	}
+
+	public Player getNearestPlayerWithPhone(GridPoint myPt) {
+		double nearestPlayerWithPhoneDist = Double.MAX_VALUE;
+		Player nearestPlayerWithPhone = null;
+
+		Iterator<Object> iter = grid.getObjects().iterator();
+		while(iter.hasNext()) {
+			Object element = iter.next();
+			if(element.getClass() == Player.class) {
+				if(((Player)element).isMobileOn()) {
+					GridPoint otherPt = grid.getLocation((Player)element);
+					double dist = grid.getDistance(myPt, otherPt);
+					if(dist < nearestPlayerWithPhoneDist) {
+						nearestPlayerWithPhoneDist = dist;
+						nearestPlayerWithPhone = (Player)element;
+					}
+				}
+			}
+		}
+		
+		return nearestPlayerWithPhone;
 	}
 	
-	public void moveTowards(GridPoint pt) {
+	public Player choosePrey(Player nearestPlayer, Player nearestPlayerWithMobile, GridPoint myPt) {
+		if(nearestPlayer == null) {
+			if(nearestPlayerWithMobile == null) {
+				return null;
+			} else {
+				return nearestPlayerWithMobile;
+			} 
+		} else if (nearestPlayerWithMobile == null) {
+			return nearestPlayer;
+		}
+		
+		double dist1 = grid.getDistance(myPt, grid.getLocation((Player)nearestPlayer));
+		double dist2 = grid.getDistance(myPt, grid.getLocation((Player)nearestPlayerWithMobile));
+		
+		if(dist1 < dist2/2) {
+			return nearestPlayer;
+		}
+		return nearestPlayer;
+		
+	}
+	
+	public void randomMove(GridPoint myPt) {
+		GridCellNgh<Object> nghCreator = new GridCellNgh<Object>(grid, myPt, Object.class, RADIUS,
+				RADIUS);
+		List<GridCell<Object>> gridCells = nghCreator.getNeighborhood(false);
+		SimUtilities.shuffle(gridCells, RandomHelper.getUniform());
+		GridPoint otherPoint = gridCells.get(0).getPoint();
+		moveTowards(myPt, otherPoint, WALKING_SPEED);
+	}
+	
+	
+	public void moveTowards(GridPoint src, GridPoint dest, double speed) {
 		// only move if we are not already in this grid location
-		if (!pt.equals(grid.getLocation(this))) {
-			NdPoint myPoint = space.getLocation(this);
-			NdPoint otherPoint = new NdPoint(pt.getX(), pt.getY());
-			double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint);
-			double dist = space.getDistance(myPoint, otherPoint);
-			dist = (dist < SLENDER_SPEED) ? dist : SLENDER_SPEED;
-			space.moveByVector(this, dist, angle, 0);
-			myPoint = space.getLocation(this);
-			grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
+		if (!dest.equals(src)) {
+			NdPoint myPt = new NdPoint(src.getX(), src.getY());
+			NdPoint otherPt = new NdPoint(dest.getX(), dest.getY());
+			double angle = SpatialMath.calcAngleFor2DMovement(space, myPt, otherPt);
+			double dist = space.getDistance(myPt, otherPt);
+			if(dist < speed) {
+				space.moveTo(this, otherPt.getX(), otherPt.getY());
+			} else {
+				space.moveByVector(this, speed, angle, 0);
+			}
+			
+			myPt = space.getLocation(this);
+			grid.moveTo(this, (int) myPt.getX(), (int) myPt.getY());
 		}
 	}
 
-	public void infect() {
+	public void kill() {
 		GridPoint pt = grid.getLocation(this);
 		List<Object> humans = new ArrayList<Object>();
 		for (Object obj : grid.getObjectsAt(pt.getX(), pt.getY())) {
@@ -133,7 +191,7 @@ public class Slender extends Agent {
 			int index = RandomHelper.nextIntFromTo(0, humans.size() - 1);
 			Object obj = humans.get(index);
 			System.out.println("Killing player!");
-			((Player) obj).killPlayer();
+			((Player) obj).die();
 		}
 	}
 }

@@ -35,18 +35,22 @@ public class Player extends Agent {
 	
 	private ArrayList<Device> knownDevices = new ArrayList<Device>();
 
-	static final int BIG_RADIUS = 7;
-	static final int SMALL_RADIUS = 3;
-	static final int PLAYER_SPEED = 1;
+	static int BIG_RADIUS = 7;
+	static int SMALL_RADIUS = 3;
+	static int PLAYER_SPEED = 1;
 
+	static final int BATTERY_PER_STEP = 1;
 	static final int BATTERY_PER_TICK = 20;
 	
 	private boolean alive;
 	private ArrayList<Device> claimedDevices = new ArrayList<Device>();
 
-	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int energy) {
+	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int big_radius, int small_radius, int speed) {
 		this.space = space;
 		this.grid = grid;
+		BIG_RADIUS = big_radius;
+		SMALL_RADIUS = small_radius;
+		PLAYER_SPEED = speed;
 	}
 
 	@Override
@@ -438,7 +442,7 @@ public class Player extends Agent {
 			} else {
 				if(agent.mobileBattery != 0){
 					moveTowardsRechargePoint();
-					agent.setMobileBattery(agent.getMobileBattery() - 1);
+					agent.setMobileBattery(agent.getMobileBattery() - BATTERY_PER_STEP);
 				} else {
 					agent.move();
 				}
@@ -447,9 +451,10 @@ public class Player extends Agent {
 
 		public void normalMove(int lightPeriod, int darknessPeriod) {
 			if(lightPeriod > 0) {
+				agent.turnMobileOn();
 				agent.move();
 				agent.setLightPeriod(lightPeriod - 1);
-				agent.setMobileBattery(agent.getMobileBattery() - 1);
+				agent.setMobileBattery(agent.getMobileBattery() - BATTERY_PER_STEP);
 			} else if (darknessPeriod > 0) {
 				agent.turnMobileOff();
 				agent.move();
@@ -473,7 +478,7 @@ public class Player extends Agent {
 		alive = false;
 	}
 
-	public void killPlayer() {
+	public void die() {
 		Context<?> context = ContextUtils.getContext(this);
 		context.remove(this);
 		doDelete();

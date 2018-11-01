@@ -75,30 +75,36 @@ public class SlenderManBuilder extends RepastSLauncher implements ContextBuilder
 
 		try {
 			Parameters params = RunEnvironment.getInstance().getParameters();
-			
-			Slender s = new Slender(space, grid);
+
+			int slender_radius = (Integer) params.getValue("slender_radius");
+			double slender_running_speed = (Double) params.getValue("slender_running_speed");
+			double slender_walking_speed = (Double) params.getValue("slender_walking_speed");
+
+			Slender s = new Slender(space, grid, slender_radius, slender_running_speed, slender_walking_speed);
 			agentContainer.acceptNewAgent("Slender" + 1, s).start();
 			context.add(s);
-			
+
 			int player_count = (Integer) params.getValue("player_count");
+			int player_big_radius = (Integer) params.getValue("player_big_radius");
+			int player_small_radius = (Integer) params.getValue("player_small_radius");
+			int player_speed = (Integer) params.getValue("player_speed");
 			Player[] players = new Player[player_count];
 			for (int i = 0; i < player_count; i++) {
-				int energy = RandomHelper.nextIntFromTo(4, 10);
-				Player p = new Player(space, grid, energy);
+				Player p = new Player(space, grid, player_big_radius, player_small_radius, player_speed);
 				agentContainer.acceptNewAgent("Player" + i, p).start();
 				context.add(p);
 				players[i] = p;
 			}
-			
+
 			Tower t = new Tower(space, grid, context, players);
 			agentContainer.acceptNewAgent("Tower", t).start();
 
-			
+
 			for (Object obj : context) {
 				NdPoint pt = space.getLocation(obj);
 				grid.moveTo(obj, (int) pt.getX(), (int) pt.getY());
 			}
-			
+
 			if (RunEnvironment.getInstance().isBatch()) {
 				RunEnvironment.getInstance().endAt(20);
 			}
