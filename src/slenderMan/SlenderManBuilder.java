@@ -20,6 +20,7 @@ import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridBuilderParameters;
 import repast.simphony.space.grid.SimpleGridAdder;
 import repast.simphony.space.grid.WrapAroundBorders;
+import sajas.core.AID;
 import sajas.core.Runtime;
 import sajas.sim.repasts.RepastSLauncher;
 import sajas.wrapper.ContainerController;
@@ -90,12 +91,12 @@ public class SlenderManBuilder extends RepastSLauncher implements ContextBuilder
 			int player_speed = (Integer) params.getValue("player_speed");
 			Player[] players = new Player[player_count];
 			for (int i = 0; i < player_count; i++) {
-				Player p = new Player(space, grid, player_big_radius, player_small_radius, player_speed);
+				Player p = new Player(space, grid, i, player_count, player_big_radius, player_small_radius, player_speed);
 				agentContainer.acceptNewAgent("Player" + i, p).start();
 				context.add(p);
 				players[i] = p;
 			}
-
+			
 			Tower t = new Tower(space, grid, context, players);
 			agentContainer.acceptNewAgent("Tower", t).start();
 

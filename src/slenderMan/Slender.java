@@ -53,28 +53,7 @@ public class Slender extends Agent {
 				
 				Player player = agent.getNearestPlayer(myPt);
 			Player playerWithPhone = agent.getNearestPlayerWithPhone(myPt);
-			System.out.println("-----------------------------------");
 			Player prey = agent.choosePrey(player, playerWithPhone, myPt);
-			if(player == null) {
-				System.out.println("No player");
-			}
-			if(playerWithPhone == null) {
-				System.out.println("No player with phone");
-			}
-			if(prey != null) {
-				if(player != null) {
-					System.out.println("Nearest Player: " + player.getName());
-					System.out.println("	" + grid.getDistance(myPt, grid.getLocation(player)));
-				}
-				if(playerWithPhone != null) {
-					System.out.println("Player with phone: " + playerWithPhone.getName());
-					System.out.println("	" + grid.getDistance(myPt, grid.getLocation(playerWithPhone)));
-				}
-				System.out.println("Prey: " + prey.getName());
-			} else {
-				//System.out.println("Random move");
-			}
-			
 			
 			if(prey == null) {
 				agent.randomMove(myPt);

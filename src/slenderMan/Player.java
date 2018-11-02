@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import repast.simphony.context.Context;
 import repast.simphony.query.space.grid.GridCell;
 import repast.simphony.query.space.grid.GridCellNgh;
@@ -17,13 +19,16 @@ import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridPoint;
 import repast.simphony.util.ContextUtils;
 import repast.simphony.util.SimUtilities;
+import sajas.core.AID;
 import sajas.core.Agent;
 import sajas.core.behaviours.CyclicBehaviour;
 
 public class Player extends Agent {
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
-	
+	private int id;
+	private int playerNum;
+
 	private int lightPeriod = 0;
 	private int darknessPeriod = 0;
 	private GridPoint targetPoint = null;
@@ -32,7 +37,7 @@ public class Player extends Agent {
 	private int mobileBattery = 100;
 	private boolean goingToRecharge = false;
 	private boolean recharging = false;
-	
+
 	private ArrayList<Device> knownDevices = new ArrayList<Device>();
 
 	static int BIG_RADIUS = 7;
@@ -40,14 +45,18 @@ public class Player extends Agent {
 	static int PLAYER_SPEED = 1;
 
 	static final int BATTERY_PER_STEP = 1;
+	static final int BATTERY_PER_MSG = 3;
 	static final int BATTERY_PER_TICK = 20;
-	
+
 	private boolean alive;
 	private ArrayList<Device> claimedDevices = new ArrayList<Device>();
 
-	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int big_radius, int small_radius, int speed) {
+	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int id, int playerNum, int big_radius, int small_radius, int speed) {
 		this.space = space;
 		this.grid = grid;
+		this.id = id;
+		this.playerNum = playerNum;
+		
 		BIG_RADIUS = big_radius;
 		SMALL_RADIUS = small_radius;
 		PLAYER_SPEED = speed;
@@ -56,8 +65,14 @@ public class Player extends Agent {
 	@Override
 	public void setup() {
 		addBehaviour(new Exploring(this));
+		addBehaviour(new ListeningBehaviour(this));
 		alive = true;
 	}
+	
+	public int getID() {
+		return this.id;
+	}
+	
 	public int getLightPeriod() {
 		return this.lightPeriod;
 	}
@@ -73,7 +88,7 @@ public class Player extends Agent {
 	public void setDarknessPeriod(int p) {
 		this.darknessPeriod = p;
 	}
-	
+
 	public boolean isMobileOn() {
 		return this.mobileOn;
 	}
@@ -177,12 +192,11 @@ public class Player extends Agent {
 				Object element = iter.next();
 				if (element.getClass() == Device.class) {
 					((Device) element).turnOff(this);
-					//TODO: desclaim device
-					if (!knownDevices.contains(element)) {
-//						System.out.println(this.getName() + " encontrou um novo dispositivo " + ((Device)element).getID());
+					if (!knownDevices.contains((Device)element)) {
+						System.out.println(this.getName() + " found device num " + ((Device)element).getID());
 						knownDevices.add((Device) element);
-//						System.out.println("Adding to known");
-						// TODO: mandar mensagem aos outros com a localizacao do dispositivo encontrado
+						shareDevicePosition(((Device)element).getID());
+						this.setMobileBattery(this.getMobileBattery() - BATTERY_PER_MSG);
 					}
 				} else if(element.getClass() == Recharge.class) {
 					if(goingToRecharge) {
@@ -199,7 +213,6 @@ public class Player extends Agent {
 	 * Player is next to a recharger and so is going to recharge his mobile
 	 */
 	public void rechargeMobile() {
-//		System.out.println(this.getName() + " a carregar...");
 		mobileBattery += BATTERY_PER_TICK;
 		if(mobileBattery >= 100) {
 			mobileBattery = 100;
@@ -233,17 +246,16 @@ public class Player extends Agent {
 	 */
 	public void findTarget() {		
 		if (knownDevices.size() == Tower.NUMBER_OF_DEVICES) {
-//			System.out.println("I know all devices");
 			findDeviceToTurnOff();
 			return;
 		}
-		
+
 		if(goingToRecharge) {
 			if(findRechargerInTheDark()) {
 				return;
 			}
 		}
-		
+
 		GridPoint myPt = grid.getLocation(this);
 		int radius = this.mobileOn ? BIG_RADIUS : SMALL_RADIUS;
 
@@ -269,6 +281,11 @@ public class Player extends Agent {
 		this.targetPoint = nearestDevice;
 	}
 
+	/**
+	 * Player needs to recharge but doesn't know the recharger location
+	 * so he going to search in the dark
+	 * @return
+	 */
 	public boolean findRechargerInTheDark() {
 		GridPoint myPt = grid.getLocation(this);
 		GridCellNgh<Recharge> nghCreator = new GridCellNgh<Recharge>(grid, myPt, Recharge.class, SMALL_RADIUS, SMALL_RADIUS);
@@ -299,7 +316,6 @@ public class Player extends Agent {
 	public boolean needsToRecharge() {
 		if(mobileBattery <= BIG_RADIUS) {
 			goingToRecharge = true;
-//			System.out.println(this.getName() + " precisa de recarregar! Bateria = " + mobileBattery);
 			return true;
 		}
 		return false;
@@ -402,13 +418,13 @@ public class Player extends Agent {
 
 		@Override
 		public void action() {
-
 			int lightPeriod = agent.getLightPeriod();
 			int darknessPeriod = agent.getDarknessPeriod();
-			if(knownDevices.size() == Tower.NUMBER_OF_DEVICES) {
-//				System.out.println(agent.getName() + " ENCONTROU TODOS OS DISPOSITIVOS");
-			}
 
+			if(knownDevices.size() == 8) {
+				System.out.println(">>> " + agent.getName() + " KNOWS ALL DEVICES!");
+				noticeTower();
+			}
 			GridPoint slenderPoint = agent.getSlenderPosition();
 			if (slenderPoint != null) {
 				resetCurrentState();
@@ -426,7 +442,7 @@ public class Player extends Agent {
 			}
 
 		}
-		
+
 		public void resetCurrentState() {
 			agent.turnMobileOff();
 			targetPoint = null;
@@ -468,6 +484,38 @@ public class Player extends Agent {
 		}
 	}
 
+	private class ListeningBehaviour extends CyclicBehaviour {
+		MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+		public Player agent;
+		public ListeningBehaviour(Agent a) {
+			super(a);
+			this.agent = (Player)a;
+		}
+		public void action() {
+			boolean next = true;
+			if(agent.isMobileOn()) {
+				while(next) {
+					ACLMessage msg = receive(mt);
+					if(msg != null) {
+						int deviceID = Integer.parseInt(msg.getContent());
+						System.out.println(agent.getName() + " received msg from " + msg.getSender());
+						System.out.println("        Device " + deviceID);
+						agent.acknowledgeNewDevice(deviceID);
+					} else {
+						block();
+						next = false;
+					}
+				}
+			} else {
+				if(isRunnable()) {
+					restart();
+				}
+			}
+		}
+	}
+
+
+
 	public boolean isAlive() {
 		return alive;
 	}
@@ -483,5 +531,44 @@ public class Player extends Agent {
 		context.remove(this);
 		doDelete();
 	}
+
+	public void acknowledgeNewDevice(int id) {
+		Iterator<Object> iter = grid.getObjects().iterator();
+		while (iter.hasNext()) {
+			Object element = iter.next();
+			if (element.getClass() == Device.class) {
+				if (((Device)element).getID() == id && !knownDevices.contains((Device)element)) {
+					knownDevices.add((Device) element);
+				}
+			}
+		}
+	}
+
+	public void shareDevicePosition(int id) {
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.setContent(Integer.toString(id));
+		msg.setConversationId("device_found");
+		
+		msg.addReceiver(new AID("Tower", AID.ISLOCALNAME));
+		for(int i = 0; i < playerNum; i++) {
+			if(i != this.id) {
+				AID aid = new AID( "Player" + i, AID.ISLOCALNAME);
+				msg.addReceiver(aid);
+			}
+		}
+		send(msg);
+	}
+	
+	public void noticeTower() {
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.setContent(Integer.toString(this.id));
+		msg.setConversationId("knows_all_devices");
+		msg.addReceiver(new AID("Tower", AID.ISLOCALNAME));
+		send(msg);
+	}
+
+
+
+
 
 }
