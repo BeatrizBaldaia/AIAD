@@ -7,6 +7,6 @@
     <string>tick</string>
     <string>p</string>
   </sourceIds>
-  <fileName>PlayersAlive.txt</fileName>
+  <fileName>PlayersAlive.csv</fileName>
   <addTimeStamp>true</addTimeStamp>
 </repast.simphony.data2.engine.FileSinkDescriptor>
