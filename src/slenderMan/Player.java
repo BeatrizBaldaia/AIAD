@@ -569,8 +569,8 @@ public class Player extends Agent {
 							agent.acknowledgeNewDevice(deviceID);
 						} /*else if (msg.getConversationId() == "claim") {
 							Device dev = null;
-							for(Device dev_iter: knownDevices) {
-								if(dev_iter.getID() == deviceID) {
+							for (Device dev_iter : knownDevices) {
+								if (dev_iter.getID() == deviceID) {
 									dev = dev_iter;
 									break;
 								}
@@ -647,6 +647,21 @@ public class Player extends Agent {
 
 	public void setDevicesToTurnOFF(List<Node> list) {
 		this.devicesToTurnOFF = list;
+	}
+
+	public NdPoint findNearestDevice() {
+		NdPoint betterDevice = null;
+		NdPoint pt = space.getLocation(this);
+		double min_dist = Double.MAX_VALUE;
+		for (int i = 0; i < knownDevices.size(); i++) {
+			NdPoint pt_dev = space.getLocation(knownDevices.get(i));
+			double dist = space.getDistance(pt, pt_dev);
+			if (min_dist > dist) {
+				min_dist = dist;
+				betterDevice = pt_dev;
+			}
+		}
+		return betterDevice;
 	}
 
 }
