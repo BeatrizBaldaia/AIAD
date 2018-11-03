@@ -10,7 +10,6 @@ import jade.lang.acl.MessageTemplate;
 import repast.simphony.context.Context;
 import repast.simphony.query.space.grid.GridCell;
 import repast.simphony.query.space.grid.GridCellNgh;
-import repast.simphony.query.space.grid.MooreQuery;
 import repast.simphony.random.RandomHelper;
 import repast.simphony.space.SpatialMath;
 import repast.simphony.space.continuous.ContinuousSpace;
@@ -487,6 +486,7 @@ public class Player extends Agent {
 	}
 
 	private class ListeningBehaviour extends CyclicBehaviour {
+		private static final long serialVersionUID = 1L;
 		MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
 		public Player agent;
 		public ListeningBehaviour(Agent a) {
@@ -568,9 +568,5 @@ public class Player extends Agent {
 		msg.addReceiver(new AID("Tower", AID.ISLOCALNAME));
 		send(msg);
 	}
-
-
-
-
 
 }

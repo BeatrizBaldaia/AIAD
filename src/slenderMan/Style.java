@@ -51,7 +51,7 @@ public class Style extends DefaultStyleOGL2D {
 			return Color.BLACK;
 		} else if(agent.getClass() == Player.class) {
 			return Color.PINK;
-		} else if(agent.getClass() == Device.class) {
+		} else if(agent.getClass() == Device.class && ((Device)agent).isOn()) {
 			return Color.LIGHT_GRAY;
 		} else if(agent.getClass() == Recharge.class) {
 			return Color.YELLOW;
