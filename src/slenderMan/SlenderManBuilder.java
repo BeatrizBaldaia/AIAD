@@ -100,7 +100,6 @@ public class SlenderManBuilder extends RepastSLauncher implements ContextBuilder
 			Tower t = new Tower(space, grid, context, players);
 			agentContainer.acceptNewAgent("Tower", t).start();
 
-
 			for (Object obj : context) {
 				NdPoint pt = space.getLocation(obj);
 				grid.moveTo(obj, (int) pt.getX(), (int) pt.getY());

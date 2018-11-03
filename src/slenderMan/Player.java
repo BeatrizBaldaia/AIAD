@@ -158,6 +158,7 @@ public class Player extends Agent {
 		}
 		moveForward();
 		checkDestiny();
+		
 	}
 
 	/**
@@ -468,6 +469,7 @@ public class Player extends Agent {
 		public void normalMove(int lightPeriod, int darknessPeriod) {
 			if(lightPeriod > 0) {
 				agent.turnMobileOn();
+				
 				agent.move();
 				agent.setLightPeriod(lightPeriod - 1);
 				agent.setMobileBattery(agent.getMobileBattery() - BATTERY_PER_STEP);
