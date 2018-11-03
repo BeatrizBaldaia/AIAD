@@ -36,6 +36,9 @@ public class Player extends Agent {
 	private int mobileBattery = 100;
 	private boolean goingToRecharge = false;
 	private boolean recharging = false;
+	private boolean updateStyle = false;
+	private boolean sendingMsg = false;
+	private boolean startsRunnig = false;
 
 	private ArrayList<Device> knownDevices = new ArrayList<Device>();
 
@@ -90,6 +93,30 @@ public class Player extends Agent {
 
 	public boolean isMobileOn() {
 		return this.mobileOn;
+	}
+	
+	public boolean isSendingMsg() {
+		return this.sendingMsg;
+	}
+	
+	public void setSendingMsg(boolean s) {
+		this.sendingMsg = s;
+	}
+	
+	public boolean isStartingRunning() {
+		return this.startsRunnig;
+	}
+	
+	public void setStratsRunning(boolean s) {
+		this.startsRunnig = s;
+	}
+	
+	public boolean needsToUpdateStyle() {
+		return this.updateStyle;
+	}
+	
+	public void setUpdateStyle(boolean s) {
+		this.updateStyle = s;
 	}
 
 	public void turnMobileOff() {
@@ -193,8 +220,10 @@ public class Player extends Agent {
 				if (element.getClass() == Device.class) {
 					((Device) element).turnOff(this);
 					if (!knownDevices.contains((Device)element)) {
-						System.out.println(this.getName() + " found device num " + ((Device)element).getID());
+						//System.out.println(this.getName() + " found device num " + ((Device)element).getID());
 						knownDevices.add((Device) element);
+						this.sendingMsg = true;
+						setUpdateStyle(true);
 						shareDevicePosition(((Device)element).getID());
 						this.setMobileBattery(this.getMobileBattery() - BATTERY_PER_MSG);
 					}
@@ -409,7 +438,7 @@ public class Player extends Agent {
 		private static final long serialVersionUID = 1L;
 		public Player agent;
 		public Random rand;
-
+		public boolean update = false;
 		public Exploring(Agent a) {
 			super(a);
 			agent = (Player) this.myAgent;
@@ -422,14 +451,23 @@ public class Player extends Agent {
 			int darknessPeriod = agent.getDarknessPeriod();
 
 			if(knownDevices.size() == 8) {
-				System.out.println(">>> " + agent.getName() + " KNOWS ALL DEVICES!");
+				//System.out.println(">>> " + agent.getName() + " KNOWS ALL DEVICES!");
 				noticeTower();
 			}
 			GridPoint slenderPoint = agent.getSlenderPosition();
 			if (slenderPoint != null) {
-				resetCurrentState();
+				if(!agent.isStartingRunning()) {
+					agent.setStratsRunning(true);
+					agent.setUpdateStyle(true);
+					resetCurrentState();
+				}
 				agent.escape(slenderPoint);
 			} else {
+				if(agent.isStartingRunning()) {
+					agent.setStratsRunning(false);
+					agent.setUpdateStyle(true);
+					update = true;
+				}
 				if(recharging) {
 					agent.rechargeMobile();
 				} else {
@@ -466,17 +504,33 @@ public class Player extends Agent {
 		}
 
 		public void normalMove(int lightPeriod, int darknessPeriod) {
+			System.out.println(agent.getName());
+			System.out.println("light period: "+lightPeriod);
+			System.out.println("darkness period: "+darknessPeriod);
 			if(lightPeriod > 0) {
 				agent.turnMobileOn();
-				
+				if(update) {
+					agent.setUpdateStyle(true);
+					update = false;
+				}
 				agent.move();
-				agent.setLightPeriod(lightPeriod - 1);
+				lightPeriod--;
+				agent.setLightPeriod(lightPeriod);
 				agent.setMobileBattery(agent.getMobileBattery() - BATTERY_PER_STEP);
+				if(lightPeriod == 0) {
+					update = true;
+				}
 			} else if (darknessPeriod > 0) {
 				agent.turnMobileOff();
+				if(update) {
+					agent.setUpdateStyle(true);
+					update = false;
+				}
 				agent.move();
-				agent.setDarknessPeriod(darknessPeriod - 1);
+				darknessPeriod--;
+				agent.setDarknessPeriod(darknessPeriod);
 			} else {
+				update = true;
 				int newLightPeriod = rand.nextInt(5);
 				int newDarknessPeriod = rand.nextInt(5);
 				agent.setLightPeriod(newLightPeriod);
@@ -500,8 +554,8 @@ public class Player extends Agent {
 					ACLMessage msg = receive(mt);
 					if(msg != null) {
 						int deviceID = Integer.parseInt(msg.getContent());
-						System.out.println(agent.getName() + " received msg from " + msg.getSender());
-						System.out.println("        Device " + deviceID);
+						//System.out.println(agent.getName() + " received msg from " + msg.getSender());
+						//System.out.println("        Device " + deviceID);
 						agent.acknowledgeNewDevice(deviceID);
 					} else {
 						block();

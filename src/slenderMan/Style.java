@@ -11,6 +11,10 @@ public class Style extends DefaultStyleOGL2D {
 	
 	@Override
 	public VSpatial getVSpatial(Object agent, VSpatial spatial) {
+		if(agent.getClass() == Player.class && ((Player)agent).needsToUpdateStyle()) {
+			spatial = null;
+			((Player)agent).setUpdateStyle(false);
+		}
 		if(spatial == null) {
 			if(agent.getClass() == Slender.class) {
 				try {
@@ -19,9 +23,16 @@ public class Style extends DefaultStyleOGL2D {
 					e.printStackTrace();
 				}
 			} else if(agent.getClass() == Player.class) {
-				if(((Player)agent).isMobileOn()) {
+				if(((Player)agent).isStartingRunning()) {
+					try {
+						spatial = shapeFactory.createImage("src/imgs/player_running.png", 0.06f);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} else if(((Player)agent).isMobileOn() || ((Player)agent).isSendingMsg()) {
 					try {
 						spatial = shapeFactory.createImage("src/imgs/player_mobile.png", 0.06f);
+						((Player)agent).setSendingMsg(false);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
