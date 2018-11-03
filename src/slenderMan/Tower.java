@@ -122,7 +122,7 @@ public class Tower extends Agent {
 		}
 	}
 
-	public void deviceAllocation() {
+	public List<List<Node>> deviceAllocation() {
 		
 		List<Node> nodes_devices = getNodesDevices();
 		List<List<Node>> players_routes = new ArrayList<List<Node>>();
@@ -142,6 +142,7 @@ public class Tower extends Agent {
 			players_routes.add(route);
 		}
 		System.out.println(players_routes);
+		return players_routes;
 	}
 
 	private Set<Player> getPlayersAlive() {
@@ -163,27 +164,16 @@ public class Tower extends Agent {
 	}
 
 	public void doAlgothirtm() {
-		deviceAllocation();
-		//
-		// Set<Node> settledNodes = new HashSet<>();
-		// Set<Node> unsettledNodes = new HashSet<>();
-		// Set<Node> allNodes = getNodes(unsettledNodes);
-		//
-		// while (unsettledNodes.size() != 0) {
-		// Node currentNode = getLowestDistanceNode(unsettledNodes);
-		// unsettledNodes.remove(currentNode);
-		// for (Node adjacentNode : allNodes) {
-		// Double edgeWeight = space.getDistance(currentNode.getPoint(),
-		// adjacentNode.getPoint());
-		// if (!settledNodes.contains(adjacentNode)) {
-		// calculateMinimumDistance(adjacentNode, edgeWeight, currentNode);
-		// unsettledNodes.add(adjacentNode);
-		// }
-		// }
-		// settledNodes.add(currentNode);
-		// }
-		// sendMessages(allNodes);
-		// return;
+		List<List<Node>> routes = deviceAllocation();
+		Set<Player> players_alive = getPlayersAlive();
+		int index = 0;
+		for(Player p : players_alive) {
+			p.setDevicesToTurnOFF(routes.get(index));
+			index++;
+			if(index >= routes.size()) {
+				index=0;
+			}
+		}
 	}
 
 	private void sendMessages(Set<Node> allNodes) {

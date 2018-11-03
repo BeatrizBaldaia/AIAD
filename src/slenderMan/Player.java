@@ -52,7 +52,7 @@ public class Player extends Agent {
 
 	private boolean alive;
 	private ArrayList<Device> claimedDevices = new ArrayList<Device>();
-	private ArrayList<Node> devicesToTurnOFF = new ArrayList<Node>();
+	private List<Node> devicesToTurnOFF = new ArrayList<Node>();
 
 	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int id, int playerNum, int big_radius,
 			int small_radius, int speed) {
@@ -667,12 +667,12 @@ public class Player extends Agent {
 		send(msg);
 	}
 
-	public ArrayList<Node> getDevicesToTurnOFF() {
+	public List<Node> getDevicesToTurnOFF() {
 		return devicesToTurnOFF;
 	}
 
-	public void setDevicesToTurnOFF(ArrayList<Node> devicesToTurnOFF) {
-		this.devicesToTurnOFF = devicesToTurnOFF;
+	public void setDevicesToTurnOFF(List<Node> list) {
+		this.devicesToTurnOFF = list;
 	}
 
 }
