@@ -1,6 +1,9 @@
 package slenderMan;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
 
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -18,10 +21,10 @@ public class Tower extends Agent {
 	private Device[] dev = new Device[NUMBER_OF_DEVICES];
 	private Player[] players;
 	private ArrayList<Integer> playersReady = new ArrayList<Integer>();
-
+	private ContinuousSpace<Object> space;
 	public Tower(ContinuousSpace<Object> space, Grid<Object> grid, Context<Object> context, Player[] players) {
 		this.players = players;
-
+		this.space = space;
 		//Create static map elements (Devices and Rechargers)
 		for (int i = 0; i < dev.length; i++) {
 			dev[i] = new Device(space, grid, i);
@@ -104,6 +107,67 @@ public class Tower extends Agent {
 
 	public Player[] getPlayers() {
 		return this.players;
+	}
+
+	public void doAlgothirtm() {
+
+		Set<Node> settledNodes = new HashSet<>();
+		Set<Node> unsettledNodes = new HashSet<>();
+		Set<Node> allNodes = getNodes(unsettledNodes);
+
+		while (unsettledNodes.size() != 0) {
+			Node currentNode = getLowestDistanceNode(unsettledNodes);
+			unsettledNodes.remove(currentNode);
+			for (Node adjacentNode : allNodes) {
+				Double edgeWeight = space.getDistance(currentNode.getPoint(), adjacentNode.getPoint());
+				if (!settledNodes.contains(adjacentNode)) {
+					calculateMinimumDistance(adjacentNode, edgeWeight, currentNode);
+					unsettledNodes.add(adjacentNode);
+				}
+			}
+			settledNodes.add(currentNode);
+		}
+		return;
+	}
+
+	private Set<Node> getNodes(Set<Node> unsettledNodes) {
+		Set<Node> set = new HashSet<>();
+		for (int i = 0; i < dev.length; i++) {
+			Node node = new Node(space.getLocation(dev[i]));
+			set.add(node);
+		}
+		for (int i = 0; i < players.length; i++) {
+			if (players[i].isAlive()) {
+				Node node = new Node(space.getLocation(players[i]));
+				node.setDistance(0);
+				set.add(node);
+				unsettledNodes.add(node);
+			}
+		}
+		return set;
+	}
+
+	private static Node getLowestDistanceNode(Set<Node> unsettledNodes) {
+		Node lowestDistanceNode = null;
+		double lowestDistance = Double.MAX_VALUE;
+		for (Node node : unsettledNodes) {
+			double nodeDistance = node.getDistance();
+			if (nodeDistance < lowestDistance) {
+				lowestDistance = nodeDistance;
+				lowestDistanceNode = node;
+			}
+		}
+		return lowestDistanceNode;
+	}
+
+	private static void calculateMinimumDistance(Node evaluationNode, Double edgeWeigh, Node sourceNode) {
+		Double sourceDistance = sourceNode.getDistance();
+		if (sourceDistance + edgeWeigh < evaluationNode.getDistance()) {
+			evaluationNode.setDistance(sourceDistance + edgeWeigh);
+			LinkedList<Node> shortestPath = new LinkedList<>(sourceNode.getShortestPath());
+			shortestPath.add(sourceNode);
+			evaluationNode.setShortestPath(shortestPath);
+		}
 	}
 
 	public boolean areAllPlayersReady() {
