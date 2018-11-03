@@ -3,6 +3,8 @@
  */
 package slenderMan;
 
+import java.io.Serializable;
+
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.NdPoint;
 import repast.simphony.space.grid.Grid;
@@ -10,8 +12,9 @@ import repast.simphony.space.grid.GridPoint;
 
 public class Device {
 
+	private static final long serialVersionUID = 6688350845207187287L;
 	private ContinuousSpace<Object> space;
-	private Grid<Object> grid;
+	transient private Grid<Object> grid;
 	private int id;
 	private boolean on = true;
 	private int time = Tower.MAX_DEVICE_TIME;
