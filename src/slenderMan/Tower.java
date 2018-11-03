@@ -166,24 +166,24 @@ public class Tower extends Agent {
 	public void doAlgothirtm() {
 		List<List<Node>> routes = deviceAllocation();
 		Set<Player> players_alive = getPlayersAlive();
-		List<List<Node>> using = new ArrayList<List<Node>>();
-		using.addAll(routes);
+		List<List<Node>> routes_tmp = new ArrayList<List<Node>>();
+		routes_tmp.addAll(routes);
 		for (Player p : players_alive) {
-			NdPoint d = p.findNearestDevice(using);
-			List<Node> route = findList(d,using);
+			NdPoint d = p.findNearestDevice(routes_tmp);
+			List<Node> route = findNearestRoute(d, routes_tmp);
 			sendRouteToPlayer(p, route);
-			using.remove(route);
-			if(using.isEmpty()) {
-				using.addAll(routes);
+			routes_tmp.remove(route);
+			if(routes_tmp.isEmpty()) {
+				routes_tmp.addAll(routes);
 			}
 		}
 	}
 
-	private List<Node> findList(NdPoint d, List<List<Node>> routes) {
-		for(List<Node> list: routes) {
-			for(Node n:list) {
+	private List<Node> findNearestRoute(NdPoint d, List<List<Node>> routes) {
+		for(List<Node> route: routes) {
+			for(Node n: route) {
 				if(n.getPoint().getX()== d.getX() && n.getPoint().getY()== d.getY()) {
-					return list;
+					return route;
 				}
 			}
 		}

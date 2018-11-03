@@ -641,17 +641,9 @@ public class Player extends Agent {
 		send(msg);
 	}
 
-	public List<Node> getDevicesToTurnOFF() {
-		return devicesToTurnOFF;
-	}
-
-	public void setDevicesToTurnOFF(List<Node> list) {
-		this.devicesToTurnOFF = list;
-	}
-
-	public NdPoint findNearestDevice(List<List<Node>> using) {
+	public NdPoint findNearestDevice(List<List<Node>> routes) {
 		List<Node> nodes = new ArrayList<Node>();
-		for(List<Node> r:using) {
+		for(List<Node> r:routes) {
 			nodes.addAll(r);
 		}
 		NdPoint betterDevice = null;
