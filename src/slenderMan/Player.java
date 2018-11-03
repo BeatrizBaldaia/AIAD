@@ -203,9 +203,9 @@ public class Player extends Agent {
 			List<GridCell<Object>> gridCells = nghCreator.getNeighborhood(false);
 			SimUtilities.shuffle(gridCells, RandomHelper.getUniform());
 			GridPoint otherPoint = gridCells.get(0).getPoint();
-			spacialMove(otherPoint);
+			spatialMove(otherPoint);
 		} else {
-			spacialMove(this.targetPoint);
+			spatialMove(this.targetPoint);
 		}
 	}
 
@@ -260,7 +260,7 @@ public class Player extends Agent {
 	 * @param pt
 	 *            : player's final position
 	 */
-	public void spacialMove(GridPoint pt) {
+	public void spatialMove(GridPoint pt) {
 		NdPoint myPoint = space.getLocation(this);
 		NdPoint otherPoint = new NdPoint(pt.getX(), pt.getY());
 		double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint);
