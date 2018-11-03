@@ -167,15 +167,16 @@ public class Tower extends Agent {
 	public void doAlgothirtm() {
 		List<List<Node>> routes = deviceAllocation();
 		Set<Player> players_alive = getPlayersAlive();
-		Set<List<Node>> used = new HashSet<List<Node>>();
+		List<List<Node>> using = new ArrayList<List<Node>>();
+		using.addAll(routes);
 		for (Player p : players_alive) {
-			NdPoint d = p.findNearestDevice();
-			List<Node> route = findList(d,routes);
+			NdPoint d = p.findNearestDevice(using);
+			List<Node> route = findList(d,using);
 			sendRouteToPlayer(p, route);
-			used.add(route);
-		}
-		if(used.size() != routes.size()) {
-			//TODO change a player of route; 
+			using.remove(route);
+			if(using.isEmpty()) {
+				using.addAll(routes);
+			}
 		}
 	}
 

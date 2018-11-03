@@ -675,12 +675,16 @@ public class Player extends Agent {
 		this.devicesToTurnOFF = list;
 	}
 
-	public NdPoint findNearestDevice() {
+	public NdPoint findNearestDevice(List<List<Node>> using) {
+		List<Node> nodes = new ArrayList<Node>();
+		for(List<Node> r:using) {
+			nodes.addAll(r);
+		}
 		NdPoint betterDevice = null;
 		NdPoint pt = space.getLocation(this);
 		double min_dist = Double.MAX_VALUE;
-		for (int i = 0; i < knownDevices.size(); i++) {
-			NdPoint pt_dev = space.getLocation(knownDevices.get(i));
+		for (int i = 0; i < nodes.size(); i++) {
+			NdPoint pt_dev = space.getLocation(nodes.get(i));
 			double dist = space.getDistance(pt, pt_dev);
 			if (min_dist > dist) {
 				min_dist = dist;
