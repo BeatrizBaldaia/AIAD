@@ -11,6 +11,7 @@ import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.grid.Grid;
+import sajas.core.AID;
 import sajas.core.Agent;
 import sajas.core.behaviours.CyclicBehaviour;
 import sajas.core.behaviours.TickerBehaviour;
@@ -22,10 +23,11 @@ public class Tower extends Agent {
 	private Player[] players;
 	private ArrayList<Integer> playersReady = new ArrayList<Integer>();
 	private ContinuousSpace<Object> space;
+
 	public Tower(ContinuousSpace<Object> space, Grid<Object> grid, Context<Object> context, Player[] players) {
 		this.players = players;
 		this.space = space;
-		//Create static map elements (Devices and Rechargers)
+		// Create static map elements (Devices and Rechargers)
 		for (int i = 0; i < dev.length; i++) {
 			dev[i] = new Device(space, grid, i);
 			context.add(dev[i]);
@@ -47,8 +49,9 @@ public class Tower extends Agent {
 
 		public CheckDevices(Agent a) {
 			super(a);
-			agent = (Tower)a;
+			agent = (Tower) a;
 		}
+
 		@Override
 		public void action() {
 
@@ -59,7 +62,7 @@ public class Tower extends Agent {
 
 			if (endGameLost || endGameWin) {
 				System.out.println("End Of The Game");
-				if(endGameLost) {
+				if (endGameLost) {
 					System.out.println("Slender Won... :(");
 				} else {
 					System.out.println("Player Won!!! :D");
@@ -71,29 +74,31 @@ public class Tower extends Agent {
 	}
 
 	private class ListeningBehaviour extends CyclicBehaviour {
-		
+
 		private static final long serialVersionUID = 1L;
 		MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
 		public Tower agent;
+
 		public ListeningBehaviour(Agent a) {
 			super(a);
-			this.agent = (Tower)a;
+			this.agent = (Tower) a;
 		}
 
 		public void action() {
-			if(agent.areAllPlayersReady()) {
+			if (agent.areAllPlayersReady()) {
 				System.out.println("Tower: ALL PLAYERS ARE READY!!!");
+				agent.doAlgothirtm();
 			}
 			boolean next = true;
-			while(next) {
+			while (next) {
 				ACLMessage msg = receive(mt);
-				if(msg != null) {
+				if (msg != null) {
 					String contentID = msg.getConversationId();
-					if(contentID == "device_found") {
+					if (contentID == "device_found") {
 						int deviceID = Integer.parseInt(msg.getContent());
 						System.out.println(agent.getName() + " received msg from " + msg.getSender());
 						System.out.println("        Device " + deviceID);
-					} else if(contentID == "knows_all_devices") {
+					} else if (contentID == "knows_all_devices") {
 						int agentID = Integer.parseInt(msg.getContent());
 						agent.acknowledgePlayer(agentID);
 					}
@@ -127,7 +132,22 @@ public class Tower extends Agent {
 			}
 			settledNodes.add(currentNode);
 		}
+		sendMessages(allNodes);
 		return;
+	}
+
+	private void sendMessages(Set<Node> allNodes) {
+		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
+		String string = "";
+		msg.setContent(string);
+		msg.setConversationId("target");
+
+		msg.addReceiver(new AID("Tower", AID.ISLOCALNAME));
+		for (int i = 0; i < players.length; i++) {
+			AID aid = new AID("Player" + i, AID.ISLOCALNAME);
+			msg.addReceiver(aid);
+		}
+		send(msg);
 	}
 
 	private Set<Node> getNodes(Set<Node> unsettledNodes) {
@@ -171,8 +191,8 @@ public class Tower extends Agent {
 	}
 
 	public boolean areAllPlayersReady() {
-		for(int i = 0; i < players.length; i++) {
-			if(players[i].isAlive() && !playersReady.contains((Integer)players[i].getID())) {
+		for (int i = 0; i < players.length; i++) {
+			if (players[i].isAlive() && !playersReady.contains((Integer) players[i].getID())) {
 				return false;
 			}
 		}

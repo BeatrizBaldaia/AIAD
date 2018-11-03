@@ -21,8 +21,7 @@ public class Recharge {
 			GridPoint pt = grid.getLocation(this);
 			GridPoint p_pt = grid.getLocation(p);
 
-			if (pt.getX() == p_pt.getX() && pt.getY() == p_pt.getY()) { // TODO: teste if the if is like this, or not
-//				System.out.println("Recharging energy");
+			if (pt.getX() == p_pt.getX() && pt.getY() == p_pt.getY()) { 
 				if(p.getMobileBattery() + RECHARGE_ENERGY < MAX_ENERGY)
 				p.setMobileBattery(p.getMobileBattery() + RECHARGE_ENERGY);
 				else

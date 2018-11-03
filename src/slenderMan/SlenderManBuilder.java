@@ -58,7 +58,6 @@ public class SlenderManBuilder extends RepastSLauncher implements ContextBuilder
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
 		return "NOME LAUCHER";
 	}
 
