@@ -127,18 +127,17 @@ public class Tower extends Agent {
 
 		List<Node> nodes_devices = getNodesDevices();
 		List<List<Node>> players_routes = new ArrayList<List<Node>>();
-		List<Node> to_shearch = new ArrayList<Node>();
-		to_shearch.addAll(nodes_devices);
-		while (!to_shearch.isEmpty()) {
+		List<Node> to_search = new ArrayList<Node>();
+		to_search.addAll(nodes_devices);
+		while(!to_search.isEmpty()) {
 			List<Node> route = new ArrayList<Node>();
-			Node node = to_shearch.get(0);
-			to_shearch.remove(node);
+			Node node = to_search.remove(0);
 			route.add(node);
-			Node possible = node.getPossible(route, to_shearch);
-			while (possible != null) {
-				to_shearch.remove(possible);
+			Node possible = node.getPossible(route, to_search);
+			while(possible != null) {
+				to_search.remove(possible);
 				route.add(possible);
-				possible = node.getPossible(route, to_shearch);
+				possible = node.getPossible(route, to_search);
 			}
 			players_routes.add(route);
 		}
