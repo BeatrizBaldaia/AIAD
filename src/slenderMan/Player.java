@@ -1,10 +1,13 @@
 package slenderMan;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
+import groovy.json.internal.ArrayUtils;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import repast.simphony.context.Context;
@@ -52,8 +55,7 @@ public class Player extends Agent {
 	static final int BATTERY_PER_TICK = 20;
 
 	private boolean alive;
-	private ArrayList<Device> claimedDevices = new ArrayList<Device>();
-	private List<Node> devicesToTurnOFF = new ArrayList<Node>();
+	private List<GridPoint> devicesToTurnOFF = new ArrayList<GridPoint>();
 
 	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int id, int playerNum, int big_radius,
 			int small_radius, int speed) {
@@ -516,6 +518,14 @@ public class Player extends Agent {
 				}
 			}
 		}
+		
+		public void actingMove() {
+			targetPoint = targetPoint == null ? devicesToTurnOFF.get(0) : targetPoint;
+			if(agent.canSeeDeviceInTheDark()) {
+				agent.turnMobileOff();
+				agent.move();
+			}
+		}
 
 		public void exploringMove(int lightPeriod, int darknessPeriod) {
 			if (lightPeriod > 0) {
@@ -564,19 +574,17 @@ public class Player extends Agent {
 				while (next) {
 					ACLMessage msg = receive(mt);
 					if (msg != null) {
-						int deviceID = Integer.parseInt(msg.getContent());
 						if (msg.getConversationId() == "device_found") {
+							int deviceID = Integer.parseInt(msg.getContent());
 							agent.acknowledgeNewDevice(deviceID);
-						} /*else if (msg.getConversationId() == "claim") {
-							Device dev = null;
-							for (Device dev_iter : knownDevices) {
-								if (dev_iter.getID() == deviceID) {
-									dev = dev_iter;
-									break;
-								}
-							}
-							agent.claimedDevices.add(dev);
-						}*/
+						} else if(msg.getConversationId() == "target_route") {
+							System.out.println(agent.getName() + " route:");
+							System.out.println(msg.getContent());
+							String devicesID_tmpStr[] = msg.getContent().split(" ");
+							int[] devicesID_tmp = Arrays.asList(devicesID_tmpStr).stream().mapToInt(Integer::parseInt).toArray();
+							List<Integer> devicesID = Arrays.stream(devicesID_tmp).boxed().collect(Collectors.toList());
+							storeDevicesToTurnOff(devicesID);
+						}
 					} else {
 						block();
 						next = false;
@@ -585,6 +593,21 @@ public class Player extends Agent {
 			} else {
 				if (isRunnable()) {
 					restart();
+				}
+			}
+		}
+	}
+	
+	public void storeDevicesToTurnOff(List<Integer> ids) {
+		
+		Iterator<Object> iter = grid.getObjects().iterator();
+		while (iter.hasNext()) {
+			Object element = iter.next();
+			if (element.getClass() == Device.class) {
+				Integer id = (Integer)((Device) element).getID();
+				int index = ids.indexOf(id);
+				if (index != -1) {
+					this.devicesToTurnOFF.add(index, grid.getLocation((Device) element));
 				}
 			}
 		}
@@ -606,6 +629,10 @@ public class Player extends Agent {
 		doDelete();
 	}
 
+	/**
+	 * Check if already knows the new device found by others
+	 * @param id : device's id
+	 */
 	public void acknowledgeNewDevice(int id) {
 		Iterator<Object> iter = grid.getObjects().iterator();
 		while (iter.hasNext()) {
@@ -618,6 +645,11 @@ public class Player extends Agent {
 		}
 	}
 
+	/**
+	 * Found a new device so is going to share with
+	 * other players
+	 * @param id : device's id
+	 */
 	public void shareDevicePosition(int id) {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setContent(Integer.toString(id));
@@ -633,6 +665,10 @@ public class Player extends Agent {
 		send(msg);
 	}
 
+	/**
+	 * Notice Tower of the fact that Player is ready
+	 * (knows all devices' positions)
+	 */
 	public void noticeTower() {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setContent(Integer.toString(this.id));
@@ -641,6 +677,11 @@ public class Player extends Agent {
 		send(msg);
 	}
 
+	/**
+	 * Finds the position of the nearest device 
+	 * @param routes
+	 * @return position of the nearest devices
+	 */
 	public NdPoint findNearestDevice(List<List<Node>> routes) {
 		List<Node> nodes = new ArrayList<Node>();
 		for(List<Node> r:routes) {
@@ -650,7 +691,7 @@ public class Player extends Agent {
 		NdPoint pt = space.getLocation(this);
 		double min_dist = Double.MAX_VALUE;
 		for (int i = 0; i < nodes.size(); i++) {
-			NdPoint pt_dev = space.getLocation(nodes.get(i));
+			NdPoint pt_dev = nodes.get(i).point;
 			double dist = space.getDistance(pt, pt_dev);
 			if (min_dist > dist) {
 				min_dist = dist;

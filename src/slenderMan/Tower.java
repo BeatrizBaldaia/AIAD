@@ -23,10 +23,15 @@ public class Tower extends Agent {
 	private Player[] players;
 	private ArrayList<Integer> playersReady = new ArrayList<Integer>();
 	private ContinuousSpace<Object> space;
+	private Grid<Object> grid;
+	private List<List<Node>> routes = new ArrayList<List<Node>>();
+	private ArrayList<Player> assignedPlayers = new ArrayList<Player>();
+	private ArrayList<Player> remainingPlayers = new ArrayList<Player>();
 
 	public Tower(ContinuousSpace<Object> space, Grid<Object> grid, Context<Object> context, Player[] players) {
 		this.players = players;
 		this.space = space;
+		this.grid = grid;
 		// Create static map elements (Devices and Rechargers)
 		for (int i = 0; i < dev.length; i++) {
 			dev[i] = new Device(space, grid, i);
@@ -38,16 +43,16 @@ public class Tower extends Agent {
 
 	@Override
 	public void setup() {
-		addBehaviour(new CheckDevices(this));
+		addBehaviour(new WatchGame(this));
 		addBehaviour(new ListeningBehaviour(this));
 	}
 
-	private class CheckDevices extends CyclicBehaviour {
+	private class WatchGame extends CyclicBehaviour {
 
 		private static final long serialVersionUID = 1L;
 		private Tower agent;
 
-		public CheckDevices(Agent a) {
+		public WatchGame(Agent a) {
 			super(a);
 			agent = (Tower) a;
 		}
@@ -59,6 +64,19 @@ public class Tower extends Agent {
 
 			boolean endGameLost = agent.isEndGameLost();
 			boolean endGameWin = agent.isEndGameWin();
+			
+			if (agent.areAllPlayersReady()) {
+				System.out.println("Tower: ALL PLAYERS ARE READY!!!");
+				if(!agent.doAlgothirtm()) {
+					endGameLost = true;
+				}
+			}
+			
+			if(!agent.getRoutes().isEmpty()) {
+				if(!agent.assignNewPlayer()) {
+					endGameLost = true;
+				}
+			}
 
 			if (endGameLost || endGameWin) {
 				System.out.println("End Of The Game");
@@ -85,10 +103,6 @@ public class Tower extends Agent {
 		}
 
 		public void action() {
-			if (agent.areAllPlayersReady()) {
-				System.out.println("Tower: ALL PLAYERS ARE READY!!!");
-				agent.doAlgothirtm();
-			}
 			boolean next = true;
 			while (next) {
 				ACLMessage msg = receive(mt);
@@ -109,6 +123,10 @@ public class Tower extends Agent {
 			}
 		}
 	}
+	
+	public List<List<Node>> getRoutes() {
+		return this.routes;
+	}
 
 	public Player[] getPlayers() {
 		return this.players;
@@ -123,28 +141,12 @@ public class Tower extends Agent {
 		}
 	}
 
-	public List<List<Node>> deviceAllocation() {
+	
 
-		List<Node> nodes_devices = getNodesDevices();
-		List<List<Node>> players_routes = new ArrayList<List<Node>>();
-		List<Node> to_search = new ArrayList<Node>();
-		to_search.addAll(nodes_devices);
-		while(!to_search.isEmpty()) {
-			List<Node> route = new ArrayList<Node>();
-			Node node = to_search.remove(0);
-			route.add(node);
-			Node possible = node.getPossible(route, to_search);
-			while(possible != null) {
-				to_search.remove(possible);
-				route.add(possible);
-				possible = node.getPossible(route, to_search);
-			}
-			players_routes.add(route);
-		}
-		System.out.println(players_routes);
-		return players_routes;
-	}
-
+	/**
+	 * Gets a list with all players that are still alive
+	 * @return
+	 */
 	private Set<Player> getPlayersAlive() {
 		Set<Player> set = new HashSet<>();
 		for (int i = 0; i < players.length; i++) {
@@ -154,31 +156,87 @@ public class Tower extends Agent {
 		return set;
 	}
 
+	/**
+	 * Creates a list with nodes that represent the devices
+	 * @return
+	 */
 	private List<Node> getNodesDevices() {
 		List<Node> set = new ArrayList<>();
 		for (int i = 0; i < dev.length; i++) {
-			Node node = new Node(space.getLocation(dev[i]), space, dev[i].getID());
+			Node node = new Node(space.getLocation(dev[i]), grid.getLocation(dev[i]), space, dev[i].getID());
 			set.add(node);
 		}
 		return set;
 	}
+	
+	/**
+	 * Creates a list of closed routes
+	 * @return
+	 */
+	public List<List<Node>> deviceAllocation() {
 
-	public void doAlgothirtm() {
+		List<Node> nodes_devices = getNodesDevices();
+		List<List<Node>> players_routes = new ArrayList<List<Node>>();
+		List<Node> nodes_to_search = new ArrayList<Node>();
+		nodes_to_search.addAll(nodes_devices);
+		while(!nodes_to_search.isEmpty()) {
+			List<Node> route = new ArrayList<Node>();
+			Node node = nodes_to_search.remove(0);
+			route.add(node);
+			Node possible = node.getPossible(route, nodes_to_search);
+			while(possible != null) {
+				nodes_to_search.remove(possible);
+				route.add(possible);
+				possible = node.getPossible(route, nodes_to_search);
+			}
+			players_routes.add(route);
+		}
+		System.out.println(players_routes);
+		return players_routes;
+	}
+
+	/**
+	 * Strategy that distributes the routes through all the players
+	 * @return true if every thing is ok and players can still
+	 * win the game
+	 */
+	public boolean doAlgothirtm() {
 		List<List<Node>> routes = deviceAllocation();
 		Set<Player> players_alive = getPlayersAlive();
 		List<List<Node>> routes_tmp = new ArrayList<List<Node>>();
 		routes_tmp.addAll(routes);
+		this.routes.addAll(routes);
+		List<Player> remaining_players = new ArrayList<Player>();
 		for (Player p : players_alive) {
 			NdPoint d = p.findNearestDevice(routes_tmp);
 			List<Node> route = findNearestRoute(d, routes_tmp);
-			sendRouteToPlayer(p, route);
-			routes_tmp.remove(route);
-			if(routes_tmp.isEmpty()) {
-				routes_tmp.addAll(routes);
+			if(route == null) {
+				remaining_players.add(p);
+			} else {
+				int index = routes.indexOf(route);
+				this.assignedPlayers.add(index, p);
+				sendRouteToPlayer(p, route);
+				routes_tmp.remove(route);
+				if(routes_tmp.isEmpty()) {
+					break;
+				}
 			}
 		}
+		this.remainingPlayers.addAll(remaining_players);
+		if(!routes_tmp.isEmpty()) {
+			System.out.println("Remaining routes: " + routes_tmp.toString());
+			return handleRemainingRoutes(routes_tmp, remaining_players);
+		}
+		return true;
+		
 	}
 
+	/**
+	 * Finds the route where d is included
+	 * @param d
+	 * @param routes
+	 * @return
+	 */
 	private List<Node> findNearestRoute(NdPoint d, List<List<Node>> routes) {
 		for(List<Node> route: routes) {
 			for(Node n: route) {
@@ -189,73 +247,54 @@ public class Tower extends Agent {
 		}
 		return null;
 	}
+	
+	/**
+	 * Assign the remaining players to the remaining routes.
+	 * If there aren't  players, players will never make so
+	 * they won't turn off all the devices and then lose
+	 * @param routes
+	 * @param players
+	 * @return
+	 */
+	public boolean handleRemainingRoutes(List<List<Node>> routes, List<Player> players) {
+		if(routes.size() > players.size()) {
+			System.out.println("Not enough players...");
+			return false;
+		}
+		for(List<Node> route: routes) {
+			Player p = players.remove(0);
+			sendRouteToPlayer(p, route);
+		}
+		return true;
+	}
 
+	/**
+	 * Message sent to the players proposing routes to turn off devices
+	 * @param p : Player Receiver
+	 * @param route : The route that p will be assigned to
+	 */
 	private void sendRouteToPlayer(Player p, List<Node> route) {
-		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
-		String string = route.toString();
-		msg.setContent(string);
-		msg.setConversationId("target");
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		String content = generateMsg(route);
+		msg.setContent(content);
+		msg.setConversationId("target_route");
 		AID aid = new AID("Player" + p.getID(), AID.ISLOCALNAME);
 		msg.addReceiver(aid);
 		send(msg);
 	}
-
-	private void sendMessages(Set<Node> allNodes) {
-		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
-		String string = "";
-		msg.setContent(string);
-		msg.setConversationId("target");
-
-		msg.addReceiver(new AID("Tower", AID.ISLOCALNAME));
-		for (int i = 0; i < players.length; i++) {
-			AID aid = new AID("Player" + i, AID.ISLOCALNAME);
-			msg.addReceiver(aid);
+	
+	public String generateMsg(List<Node> route) {
+		String str = route.get(0).toString();
+		for(int i = 1; i < route.size(); i++) {
+			str += " " + route.get(i).id;
 		}
-		send(msg);
+		return str;
 	}
 
-	// private Set<Node> getNodes(Set<Node> unsettledNodes) {
-	// Set<Node> set = new HashSet<>();
-	// for (int i = 0; i < dev.length; i++) {
-	// Node node = new Node(space.getLocation(dev[i]));
-	// set.add(node);
-	// }
-	// for (int i = 0; i < players.length; i++) {
-	// if (players[i].isAlive()) {
-	// Node node = new Node(space.getLocation(players[i]));
-	// node.setDistance(0);
-	// set.add(node);
-	// unsettledNodes.add(node);
-	// }
-	// }
-	// return set;
-	// }
-	//
-	// private static Node getLowestDistanceNode(Set<Node> unsettledNodes) {
-	// Node lowestDistanceNode = null;
-	// double lowestDistance = Double.MAX_VALUE;
-	// for (Node node : unsettledNodes) {
-	// double nodeDistance = node.getDistance();
-	// if (nodeDistance < lowestDistance) {
-	// lowestDistance = nodeDistance;
-	// lowestDistanceNode = node;
-	// }
-	// }
-	// return lowestDistanceNode;
-	// }
-	//
-	// private static void calculateMinimumDistance(Node evaluationNode, Double
-	// edgeWeigh, Node sourceNode) {
-	// Double sourceDistance = sourceNode.getDistance();
-	// if (sourceDistance + edgeWeigh < evaluationNode.getDistance()) {
-	// evaluationNode.setDistance(sourceDistance + edgeWeigh);
-	// LinkedList<Node> shortestPath = new
-	// LinkedList<>(sourceNode.getShortestPath());
-	// shortestPath.add(sourceNode);
-	// evaluationNode.setShortestPath(shortestPath);
-	// }
-	// }
-
+	/**
+	 * Check if all remaining players already know all devices' positions
+	 * @return
+	 */
 	public boolean areAllPlayersReady() {
 		for (int i = 0; i < players.length; i++) {
 			if (players[i].isAlive() && !playersReady.contains((Integer) players[i].getID())) {
@@ -265,10 +304,17 @@ public class Tower extends Agent {
 		return true;
 	}
 
+	/**
+	 * Check that one specific player knows all devices' positions
+	 * @param id : Player's id
+	 */
 	public void acknowledgePlayer(int id) {
 		this.playersReady.add(id);
 	}
 
+	/**
+	 * Devices' inactivity count down
+	 */
 	public void reducingDevicesTimeOn() {
 		for (int i = 0; i < dev.length; i++) {
 			if (!dev[i].isOn()) {
@@ -281,7 +327,33 @@ public class Tower extends Agent {
 			}
 		}
 	}
+	
+	/**
+	 * If a Player assigned to a certain route die, 
+	 * another one will replace him. If it is not possible,
+	 * then it's a lost game
+	 * @return false if it's a list game
+	 */
+	public boolean assignNewPlayer() {
+		for(int i = 0; i< this.assignedPlayers.size(); i++) {
+			if(!this.assignedPlayers.get(i).isAlive()) {
+				if(this.remainingPlayers.isEmpty()) {
+					return false;
+				}
+				Player p = this.remainingPlayers.remove(0);
+				this.assignedPlayers.remove(i);
+				this.assignedPlayers.add(i, p);
+				List<Node> route = this.routes.get(i);
+				sendRouteToPlayer(p, route);
+			}
+		}
+		return true;
+	}
 
+	/**
+	 * End of game with players' lost
+	 * @return
+	 */
 	public boolean isEndGameLost() {
 		for (int i = 0; i < players.length; i++) {
 			if (players[i].isAlive()) {
@@ -291,6 +363,10 @@ public class Tower extends Agent {
 		return true;
 	}
 
+	/**
+	 * End of game with players' victory
+	 * @return
+	 */
 	public boolean isEndGameWin() {
 		for (int i = 0; i < dev.length; i++) {
 			if (dev[i].isOn()) {

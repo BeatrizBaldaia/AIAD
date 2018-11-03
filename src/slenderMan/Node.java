@@ -9,15 +9,17 @@ import java.util.Set;
 
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.NdPoint;
+import repast.simphony.space.grid.GridPoint;
 
 public class Node {
     
 	private static final double MAX_DIST_ROUTE = Tower.MAX_DEVICE_TIME * Player.PLAYER_SPEED;
 	Set<Player> players = new HashSet<Player>();
+	public GridPoint gridPoint;
 	public NdPoint point;
 	private ContinuousSpace<Object> space;
-	private int id;
-    public Node(NdPoint ndPoint, ContinuousSpace<Object> space, int id) {
+	public int id;
+    public Node(NdPoint ndPoint, GridPoint gridPoint, ContinuousSpace<Object> space, int id) {
         this.setPoint(ndPoint);
         this.space = space;
         this.id = id;
@@ -39,7 +41,7 @@ public class Node {
 
 	@Override
 	public String toString() {
-		return "Node " + id + " ";
+		return Integer.toString(id);
 	}
 
 	private double getDistance(List<Node> route) {
