@@ -39,6 +39,7 @@ public class Player extends Agent {
 	private boolean updateStyle = false;
 	private boolean sendingMsg = false;
 	private boolean startsRunnig = false;
+	private State state = State.EXPLORING;
 
 	private ArrayList<Device> knownDevices = new ArrayList<Device>();
 
@@ -108,7 +109,7 @@ public class Player extends Agent {
 		return this.startsRunnig;
 	}
 
-	public void setStratsRunning(boolean s) {
+	public void setStartsRunning(boolean s) {
 		this.startsRunnig = s;
 	}
 
@@ -134,6 +135,18 @@ public class Player extends Agent {
 
 	public void setMobileBattery(int b) {
 		this.mobileBattery = b;
+	}
+
+	public ArrayList<Device> getKnownDevices() {
+		return this.knownDevices;
+	}
+
+	public State getState() {
+		return this.state;
+	}
+
+	public void setState(State s) {
+		this.state = s;
 	}
 
 	/**
@@ -171,8 +184,8 @@ public class Player extends Agent {
 		NdPoint myPoint = space.getLocation(this);
 		NdPoint otherPoint = new NdPoint(slenderPoint.getX(), slenderPoint.getY());
 		double angle = SpatialMath.calcAngleFor2DMovement(space, myPoint, otherPoint) + Math.PI; // mover no sentido
-																									// oposto ao slender
-																									// (+PI)
+		// oposto ao slender
+		// (+PI)
 		space.moveByVector(this, PLAYER_SPEED, angle, 0);
 		myPoint = space.getLocation(this);
 		grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
@@ -278,11 +291,6 @@ public class Player extends Agent {
 	 * Try to find a target (device or battery) in the neighborhood
 	 */
 	public void findTarget() {
-		if (knownDevices.size() == Tower.NUMBER_OF_DEVICES) {
-			findDeviceToTurnOff();
-			return;
-		}
-
 		if (goingToRecharge) {
 			if (findRechargerInTheDark()) {
 				return;
@@ -396,7 +404,7 @@ public class Player extends Agent {
 		myPoint = space.getLocation(this);
 		grid.moveTo(this, (int) myPoint.getX(), (int) myPoint.getY());
 
-		canSeeInTheDark();
+		canSeeRechargerInTheDark();
 	}
 
 	/**
@@ -404,7 +412,7 @@ public class Player extends Agent {
 	 * 
 	 * @return
 	 */
-	public boolean canSeeInTheDark() {
+	public boolean canSeeRechargerInTheDark() {
 		GridPoint myPt = grid.getLocation(this);
 
 		GridCellNgh<Recharge> nghCreator = new GridCellNgh<Recharge>(grid, myPt, Recharge.class, SMALL_RADIUS,
@@ -420,46 +428,17 @@ public class Player extends Agent {
 		}
 		return false;
 	}
-
-	private void findDeviceToTurnOff() {
-		NdPoint betterDevice = null;
-		NdPoint pt = space.getLocation(this);
-		double min_dist = Double.MAX_VALUE;
-		for (int i = 0; i < knownDevices.size(); i++) {
-			if (knownDevices.get(i).isOn() && (!claimedDevices.contains(knownDevices.get(i)))) {
-				NdPoint pt_dev = space.getLocation(knownDevices.get(i));
-				double dist = space.getDistance(pt, pt_dev);
-				if (min_dist > dist) {
-					min_dist = dist;
-					betterDevice = pt_dev;
-				}
-			}
+	
+	/**
+	 * Check if the player can already see the device in the dark
+	 * @return
+	 */
+	public boolean canSeeDeviceInTheDark() {
+		double dist = grid.getDistance(grid.getLocation(this), this.targetPoint);
+		if(dist <= BIG_RADIUS) {
+			return true;
 		}
-		if (betterDevice != null) {
-			this.targetPoint = new GridPoint((int) betterDevice.getX(), (int) betterDevice.getY());
-			claimDevice(betterDevice);
-		}
-	}
-
-	private void claimDevice(NdPoint betterDevice) {
-		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
-		Iterator<Object> iter = space.getObjectsAt(betterDevice.getX(), betterDevice.getY()).iterator();
-		while (iter.hasNext()) {
-			Object element = iter.next();
-			if (element.getClass() == Device.class) {
-				msg.setContent(((Device) element).getID() + "");
-			}
-		}
-		msg.setConversationId("claim");
-
-		msg.addReceiver(new AID("Tower", AID.ISLOCALNAME));
-		for (int i = 0; i < playerNum; i++) {
-			if (i != this.id) {
-				AID aid = new AID("Player" + i, AID.ISLOCALNAME);
-				msg.addReceiver(aid);
-			}
-		}
-		send(msg);
+		return false;
 	}
 
 	private class Exploring extends CyclicBehaviour {
@@ -480,21 +459,21 @@ public class Player extends Agent {
 			int lightPeriod = agent.getLightPeriod();
 			int darknessPeriod = agent.getDarknessPeriod();
 
-			if (knownDevices.size() == 8) {
-				// System.out.println(">>> " + agent.getName() + " KNOWS ALL DEVICES!");
+			if (agent.getKnownDevices().size() == 8 && agent.getState() == State.EXPLORING) {
 				noticeTower();
+				agent.setState(State.WAITING);
 			}
 			GridPoint slenderPoint = agent.getSlenderPosition();
 			if (slenderPoint != null) {
 				if (!agent.isStartingRunning()) {
-					agent.setStratsRunning(true);
+					agent.setStartsRunning(true);
 					agent.setUpdateStyle(true);
 					resetCurrentState();
 				}
 				agent.escape(slenderPoint);
 			} else {
 				if (agent.isStartingRunning()) {
-					agent.setStratsRunning(false);
+					agent.setStartsRunning(false);
 					agent.setUpdateStyle(true);
 					update = true;
 				}
@@ -504,7 +483,11 @@ public class Player extends Agent {
 					if (goingToRecharge || needsToRecharge()) {
 						rechargeMobileMove();
 					} else {
-						normalMove(lightPeriod, darknessPeriod);
+						if(agent.getState() != State.ACTING) {
+							exploringMove(lightPeriod, darknessPeriod);
+						} else {
+							
+						}
 					}
 				}
 			}
@@ -533,10 +516,7 @@ public class Player extends Agent {
 			}
 		}
 
-		public void normalMove(int lightPeriod, int darknessPeriod) {
-			System.out.println(agent.getName());
-			System.out.println("light period: " + lightPeriod);
-			System.out.println("darkness period: " + darknessPeriod);
+		public void exploringMove(int lightPeriod, int darknessPeriod) {
 			if (lightPeriod > 0) {
 				agent.turnMobileOn();
 				if (update) {
@@ -544,10 +524,9 @@ public class Player extends Agent {
 					update = false;
 				}
 				agent.move();
-				lightPeriod--;
-				agent.setLightPeriod(lightPeriod);
+				agent.setLightPeriod(lightPeriod - 1);
 				agent.setMobileBattery(agent.getMobileBattery() - BATTERY_PER_STEP);
-				if (lightPeriod == 0) {
+				if ((lightPeriod - 1) == 0) {
 					update = true;
 				}
 			} else if (darknessPeriod > 0) {
@@ -557,8 +536,7 @@ public class Player extends Agent {
 					update = false;
 				}
 				agent.move();
-				darknessPeriod--;
-				agent.setDarknessPeriod(darknessPeriod);
+				agent.setDarknessPeriod(darknessPeriod - 1);
 			} else {
 				update = true;
 				int newLightPeriod = rand.nextInt(5);
@@ -586,12 +564,9 @@ public class Player extends Agent {
 					ACLMessage msg = receive(mt);
 					if (msg != null) {
 						int deviceID = Integer.parseInt(msg.getContent());
-						// System.out.println(agent.getName() + " received msg from " +
-						// msg.getSender());
-						// System.out.println(" Device " + deviceID);
-						if (msg.getConversationId() == "device_found")
+						if (msg.getConversationId() == "device_found") {
 							agent.acknowledgeNewDevice(deviceID);
-						else if (msg.getConversationId() == "claim") {
+						} /*else if (msg.getConversationId() == "claim") {
 							Device dev = null;
 							for(Device dev_iter: knownDevices) {
 								if(dev_iter.getID() == deviceID) {
@@ -600,8 +575,7 @@ public class Player extends Agent {
 								}
 							}
 							agent.claimedDevices.add(dev);
-						} else
-							System.err.println("Error");
+						}*/
 					} else {
 						block();
 						next = false;
