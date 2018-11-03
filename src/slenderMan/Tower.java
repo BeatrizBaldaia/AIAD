@@ -200,19 +200,19 @@ public class Tower extends Agent {
 		send(msg);
 	}
 
-	private void sendMessages(Set<Node> allNodes) {
-		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
-		String string = "";
-		msg.setContent(string);
-		msg.setConversationId("target");
-
-		msg.addReceiver(new AID("Tower", AID.ISLOCALNAME));
-		for (int i = 0; i < players.length; i++) {
-			AID aid = new AID("Player" + i, AID.ISLOCALNAME);
-			msg.addReceiver(aid);
-		}
-		send(msg);
-	}
+//	private void sendMessages(Set<Node> allNodes) {
+//		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
+//		String string = "";
+//		msg.setContent(string);
+//		msg.setConversationId("target");
+//
+//		msg.addReceiver(new AID("Tower", AID.ISLOCALNAME));
+//		for (int i = 0; i < players.length; i++) {
+//			AID aid = new AID("Player" + i, AID.ISLOCALNAME);
+//			msg.addReceiver(aid);
+//		}
+//		send(msg);
+//	}
 
 	// private Set<Node> getNodes(Set<Node> unsettledNodes) {
 	// Set<Node> set = new HashSet<>();
