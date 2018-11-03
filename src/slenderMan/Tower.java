@@ -2,7 +2,7 @@ package slenderMan;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import jade.lang.acl.ACLMessage;
@@ -14,10 +14,9 @@ import repast.simphony.space.grid.Grid;
 import sajas.core.AID;
 import sajas.core.Agent;
 import sajas.core.behaviours.CyclicBehaviour;
-import sajas.core.behaviours.TickerBehaviour;
 
 public class Tower extends Agent {
-	static final int MAX_DEVICE_TIME = 10;
+	static final int MAX_DEVICE_TIME = 50;
 	static final int NUMBER_OF_DEVICES = 8;
 	private Device[] dev = new Device[NUMBER_OF_DEVICES];
 	private Player[] players;
@@ -114,26 +113,77 @@ public class Tower extends Agent {
 		return this.players;
 	}
 
-	public void doAlgothirtm() {
+	class State {
+		int cover, head;
 
-		Set<Node> settledNodes = new HashSet<>();
-		Set<Node> unsettledNodes = new HashSet<>();
-		Set<Node> allNodes = getNodes(unsettledNodes);
-
-		while (unsettledNodes.size() != 0) {
-			Node currentNode = getLowestDistanceNode(unsettledNodes);
-			unsettledNodes.remove(currentNode);
-			for (Node adjacentNode : allNodes) {
-				Double edgeWeight = space.getDistance(currentNode.getPoint(), adjacentNode.getPoint());
-				if (!settledNodes.contains(adjacentNode)) {
-					calculateMinimumDistance(adjacentNode, edgeWeight, currentNode);
-					unsettledNodes.add(adjacentNode);
-				}
-			}
-			settledNodes.add(currentNode);
+		State(int c, int h) {
+			cover = c;
+			head = h;
 		}
-		sendMessages(allNodes);
-		return;
+	}
+
+	public void deviceAllocation() {
+		
+		List<Node> nodes_devices = getNodesDevices();
+		List<List<Node>> players_routes = new ArrayList<List<Node>>();
+		List<Node> to_shearch = new ArrayList<Node>();
+		to_shearch.addAll(nodes_devices);
+		while(!to_shearch.isEmpty()) {
+			List<Node> route = new ArrayList<Node>();
+			Node node = to_shearch.get(0);
+			to_shearch.remove(node);
+			route.add(node);
+			Node possible = node.getPossible(route, to_shearch);
+			while(possible != null) {
+				to_shearch.remove(possible);
+				route.add(possible);
+				possible = node.getPossible(route, to_shearch);
+			}
+			players_routes.add(route);
+		}
+		System.out.println(players_routes);
+	}
+
+	private Set<Player> getPlayersAlive() {
+		Set<Player> set = new HashSet<>();
+		for (int i = 0; i < players.length; i++) {
+			if (players[i].isAlive())
+				set.add(players[i]);
+		}
+		return set;
+	}
+
+	private List<Node> getNodesDevices() {
+		List<Node> set = new ArrayList<>();
+		for (int i = 0; i < dev.length; i++) {
+			Node node = new Node(space.getLocation(dev[i]), space, dev[i].getID());
+			set.add(node);
+		}
+		return set;
+	}
+
+	public void doAlgothirtm() {
+		deviceAllocation();
+		//
+		// Set<Node> settledNodes = new HashSet<>();
+		// Set<Node> unsettledNodes = new HashSet<>();
+		// Set<Node> allNodes = getNodes(unsettledNodes);
+		//
+		// while (unsettledNodes.size() != 0) {
+		// Node currentNode = getLowestDistanceNode(unsettledNodes);
+		// unsettledNodes.remove(currentNode);
+		// for (Node adjacentNode : allNodes) {
+		// Double edgeWeight = space.getDistance(currentNode.getPoint(),
+		// adjacentNode.getPoint());
+		// if (!settledNodes.contains(adjacentNode)) {
+		// calculateMinimumDistance(adjacentNode, edgeWeight, currentNode);
+		// unsettledNodes.add(adjacentNode);
+		// }
+		// }
+		// settledNodes.add(currentNode);
+		// }
+		// sendMessages(allNodes);
+		// return;
 	}
 
 	private void sendMessages(Set<Node> allNodes) {
@@ -150,45 +200,47 @@ public class Tower extends Agent {
 		send(msg);
 	}
 
-	private Set<Node> getNodes(Set<Node> unsettledNodes) {
-		Set<Node> set = new HashSet<>();
-		for (int i = 0; i < dev.length; i++) {
-			Node node = new Node(space.getLocation(dev[i]));
-			set.add(node);
-		}
-		for (int i = 0; i < players.length; i++) {
-			if (players[i].isAlive()) {
-				Node node = new Node(space.getLocation(players[i]));
-				node.setDistance(0);
-				set.add(node);
-				unsettledNodes.add(node);
-			}
-		}
-		return set;
-	}
-
-	private static Node getLowestDistanceNode(Set<Node> unsettledNodes) {
-		Node lowestDistanceNode = null;
-		double lowestDistance = Double.MAX_VALUE;
-		for (Node node : unsettledNodes) {
-			double nodeDistance = node.getDistance();
-			if (nodeDistance < lowestDistance) {
-				lowestDistance = nodeDistance;
-				lowestDistanceNode = node;
-			}
-		}
-		return lowestDistanceNode;
-	}
-
-	private static void calculateMinimumDistance(Node evaluationNode, Double edgeWeigh, Node sourceNode) {
-		Double sourceDistance = sourceNode.getDistance();
-		if (sourceDistance + edgeWeigh < evaluationNode.getDistance()) {
-			evaluationNode.setDistance(sourceDistance + edgeWeigh);
-			LinkedList<Node> shortestPath = new LinkedList<>(sourceNode.getShortestPath());
-			shortestPath.add(sourceNode);
-			evaluationNode.setShortestPath(shortestPath);
-		}
-	}
+	// private Set<Node> getNodes(Set<Node> unsettledNodes) {
+	// Set<Node> set = new HashSet<>();
+	// for (int i = 0; i < dev.length; i++) {
+	// Node node = new Node(space.getLocation(dev[i]));
+	// set.add(node);
+	// }
+	// for (int i = 0; i < players.length; i++) {
+	// if (players[i].isAlive()) {
+	// Node node = new Node(space.getLocation(players[i]));
+	// node.setDistance(0);
+	// set.add(node);
+	// unsettledNodes.add(node);
+	// }
+	// }
+	// return set;
+	// }
+	//
+	// private static Node getLowestDistanceNode(Set<Node> unsettledNodes) {
+	// Node lowestDistanceNode = null;
+	// double lowestDistance = Double.MAX_VALUE;
+	// for (Node node : unsettledNodes) {
+	// double nodeDistance = node.getDistance();
+	// if (nodeDistance < lowestDistance) {
+	// lowestDistance = nodeDistance;
+	// lowestDistanceNode = node;
+	// }
+	// }
+	// return lowestDistanceNode;
+	// }
+	//
+	// private static void calculateMinimumDistance(Node evaluationNode, Double
+	// edgeWeigh, Node sourceNode) {
+	// Double sourceDistance = sourceNode.getDistance();
+	// if (sourceDistance + edgeWeigh < evaluationNode.getDistance()) {
+	// evaluationNode.setDistance(sourceDistance + edgeWeigh);
+	// LinkedList<Node> shortestPath = new
+	// LinkedList<>(sourceNode.getShortestPath());
+	// shortestPath.add(sourceNode);
+	// evaluationNode.setShortestPath(shortestPath);
+	// }
+	// }
 
 	public boolean areAllPlayersReady() {
 		for (int i = 0; i < players.length; i++) {

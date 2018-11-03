@@ -52,6 +52,7 @@ public class Player extends Agent {
 
 	private boolean alive;
 	private ArrayList<Device> claimedDevices = new ArrayList<Device>();
+	private ArrayList<Node> devicesToTurnOFF = new ArrayList<Node>();
 
 	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int id, int playerNum, int big_radius,
 			int small_radius, int speed) {
@@ -664,6 +665,14 @@ public class Player extends Agent {
 		msg.setConversationId("knows_all_devices");
 		msg.addReceiver(new AID("Tower", AID.ISLOCALNAME));
 		send(msg);
+	}
+
+	public ArrayList<Node> getDevicesToTurnOFF() {
+		return devicesToTurnOFF;
+	}
+
+	public void setDevicesToTurnOFF(ArrayList<Node> devicesToTurnOFF) {
+		this.devicesToTurnOFF = devicesToTurnOFF;
 	}
 
 }
