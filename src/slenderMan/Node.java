@@ -18,7 +18,7 @@ public class Node {
 	private ContinuousSpace<Object> space;
 	private int id;
     public Node(NdPoint ndPoint, ContinuousSpace<Object> space, int id) {
-        this.point = ndPoint;
+        this.setPoint(ndPoint);
         this.space = space;
         this.id = id;
     }
@@ -28,7 +28,7 @@ public class Node {
 		Node res = null;
 		double min = Double.MAX_VALUE;
 		for(Node pos : to_shearch) {
-			double step = space.getDistance(route.get(route.size()-1).point, pos.point);
+			double step = space.getDistance(route.get(route.size()-1).getPoint(), pos.getPoint());
 			if(dist + step <= MAX_DIST_ROUTE && dist + step <= min ) {
 				res = pos;
 				min = dist + step;
@@ -47,9 +47,17 @@ public class Node {
 		for(int i = 0; i < route.size()-1; i++) {
 			Node n1 = route.get(i);
 			Node n2 = route.get(i+1);
-			res += space.getDistance(n1.point, n2.point);
+			res += space.getDistance(n1.getPoint(), n2.getPoint());
 		}
 		return res;
+	}
+
+	public NdPoint getPoint() {
+		return point;
+	}
+
+	public void setPoint(NdPoint point) {
+		this.point = point;
 	}
     
 //  private String name;

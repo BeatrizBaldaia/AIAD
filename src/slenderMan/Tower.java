@@ -10,6 +10,7 @@ import jade.lang.acl.MessageTemplate;
 import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.space.continuous.ContinuousSpace;
+import repast.simphony.space.continuous.NdPoint;
 import repast.simphony.space.grid.Grid;
 import sajas.core.AID;
 import sajas.core.Agent;
@@ -123,18 +124,18 @@ public class Tower extends Agent {
 	}
 
 	public List<List<Node>> deviceAllocation() {
-		
+
 		List<Node> nodes_devices = getNodesDevices();
 		List<List<Node>> players_routes = new ArrayList<List<Node>>();
 		List<Node> to_shearch = new ArrayList<Node>();
 		to_shearch.addAll(nodes_devices);
-		while(!to_shearch.isEmpty()) {
+		while (!to_shearch.isEmpty()) {
 			List<Node> route = new ArrayList<Node>();
 			Node node = to_shearch.get(0);
 			to_shearch.remove(node);
 			route.add(node);
 			Node possible = node.getPossible(route, to_shearch);
-			while(possible != null) {
+			while (possible != null) {
 				to_shearch.remove(possible);
 				route.add(possible);
 				possible = node.getPossible(route, to_shearch);
@@ -166,14 +167,34 @@ public class Tower extends Agent {
 	public void doAlgothirtm() {
 		List<List<Node>> routes = deviceAllocation();
 		Set<Player> players_alive = getPlayersAlive();
-		int index = 0;
-		for(Player p : players_alive) {
-			p.setDevicesToTurnOFF(routes.get(index));
-			index++;
-			if(index >= routes.size()) {
-				index=0;
+		for (Player p : players_alive) {
+			// TODO: device mais perto do player ver lista em que esta adicionar, mensagenm
+			// p.setDevicesToTurnOFF(routes.get(index));
+			NdPoint d = p.findNearestDevice();
+			List<Node> route = findList(d,routes);
+			sendRouteToPlayer(p, route);
+		}
+	}
+
+	private List<Node> findList(NdPoint d, List<List<Node>> routes) {
+		for(List<Node> list: routes) {
+			for(Node n:list) {
+				if(n.getPoint().getX()== d.getX() && n.getPoint().getY()== d.getY()) {
+					return list;
+				}
 			}
 		}
+		return null;
+	}
+
+	private void sendRouteToPlayer(Player p, List<Node> route) {
+		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
+		String string = route.toString();
+		msg.setContent(string);
+		msg.setConversationId("target");
+		AID aid = new AID("Player" + p.getID(), AID.ISLOCALNAME);
+		msg.addReceiver(aid);
+		send(msg);
 	}
 
 	private void sendMessages(Set<Node> allNodes) {
