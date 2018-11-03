@@ -4,37 +4,37 @@
   <styles>
     <entry>
       <string>slenderMan.Slender</string>
-      <string>repast.simphony.visualization.editedStyle.EditedStyle2D</string>
+      <string>slenderMan.Style</string>
     </entry>
     <entry>
       <string>slenderMan.Player</string>
-      <string>repast.simphony.visualization.editedStyle.EditedStyle2D</string>
+      <string>slenderMan.Style</string>
     </entry>
     <entry>
       <string>slenderMan.Device</string>
-      <string>repast.simphony.visualization.editedStyle.EditedStyle2D</string>
+      <string>slenderMan.Style</string>
     </entry>
     <entry>
       <string>slenderMan.Recharge</string>
-      <string>repast.simphony.visualization.editedStyle.EditedStyle2D</string>
+      <string>slenderMan.Style</string>
     </entry>
   </styles>
   <editedStyles>
     <entry>
       <string>slenderMan.Slender</string>
-      <string>slenderMan.Slender.style_0.xml</string>
+      <null/>
     </entry>
     <entry>
       <string>slenderMan.Player</string>
-      <string>slenderMan.Player.style_0.xml</string>
+      <null/>
     </entry>
     <entry>
       <string>slenderMan.Device</string>
-      <string>slenderMan.Device.style_4.xml</string>
+      <null/>
     </entry>
     <entry>
       <string>slenderMan.Recharge</string>
-      <string>slenderMan.Recharge.style_2.xml</string>
+      <null/>
     </entry>
   </editedStyles>
   <netStyles/>
@@ -47,7 +47,7 @@
     <pType>LAST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>301226957</hashCode>
+    <hashCode>-799452618</hashCode>
   </schedParams>
   <layoutClassName>foo.bar.baz</layoutClassName>
   <layoutProjection>space</layoutProjection>

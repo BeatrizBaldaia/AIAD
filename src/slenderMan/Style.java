@@ -14,20 +14,20 @@ public class Style extends DefaultStyleOGL2D {
 		if(spatial == null) {
 			if(agent.getClass() == Slender.class) {
 				try {
-					spatial = shapeFactory.createImage("C:/Users/Utilizador/git/AIAD/src/imgs/Slendy.png", 0.08f);
+					spatial = shapeFactory.createImage("src/imgs/Slendy.png", 0.08f);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			} else if(agent.getClass() == Player.class) {
 				if(((Player)agent).isMobileOn()) {
 					try {
-						spatial = shapeFactory.createImage("C:/Users/Utilizador/git/AIAD/src/imgs/player_mobile.png", 0.06f);
+						spatial = shapeFactory.createImage("src/imgs/player_mobile.png", 0.06f);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				} else {
 					try {
-						spatial = shapeFactory.createImage("C:/Users/Utilizador/git/AIAD/src/imgs/player_walking.png", 0.06f);
+						spatial = shapeFactory.createImage("src/imgs/player_walking.png", 0.06f);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -36,7 +36,7 @@ public class Style extends DefaultStyleOGL2D {
 				spatial = shapeFactory.createCircle(8, 16);
 			} else if(agent.getClass() == Recharge.class) {
 				try {
-					spatial = shapeFactory.createImage("C:/Users/Utilizador/git/AIAD/src/imgs/recharger.png", 0.25f);
+					spatial = shapeFactory.createImage("src/imgs/recharger.png", 0.25f);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
