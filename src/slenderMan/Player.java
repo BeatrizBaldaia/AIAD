@@ -572,6 +572,7 @@ public class Player extends Agent {
 			boolean next = true;
 			if (agent.isMobileOn()) {
 				while (next) {
+//					TODO: receive tower instructionS
 					ACLMessage msg = receive(mt);
 					if (msg != null) {
 						if (msg.getConversationId() == "device_found") {
