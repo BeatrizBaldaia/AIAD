@@ -30,7 +30,7 @@ public class Player extends Agent {
 	private Grid<Object> grid;
 	private int id;
 	private int playerNum;
-
+	private boolean alive = true;
 	private int lightPeriod = 0;
 	private int darknessPeriod = 0;
 	private GridPoint targetPoint = null;
@@ -45,6 +45,7 @@ public class Player extends Agent {
 	private State state = State.EXPLORING;
 
 	private ArrayList<Device> knownDevices = new ArrayList<Device>();
+	private ArrayList<GridPoint> devicesToTurnOFF = new ArrayList<GridPoint>();
 
 	static int BIG_RADIUS = 7;
 	static int SMALL_RADIUS = 3;
@@ -53,9 +54,6 @@ public class Player extends Agent {
 	static final int BATTERY_PER_STEP = 1;
 	static final int BATTERY_PER_MSG = 3;
 	static final int BATTERY_PER_TICK = 20;
-
-	private boolean alive;
-	private List<GridPoint> devicesToTurnOFF = new ArrayList<GridPoint>();
 
 	public Player(ContinuousSpace<Object> space, Grid<Object> grid, int id, int playerNum, int big_radius,
 			int small_radius, int speed) {
@@ -239,13 +237,14 @@ public class Player extends Agent {
 				if (element.getClass() == Device.class) {
 					((Device) element).turnOff(this);
 					if (!knownDevices.contains((Device) element)) {
-						// System.out.println(this.getName() + " found device num " +
-						// ((Device)element).getID());
 						knownDevices.add((Device) element);
 						this.sendingMsg = true;
 						setUpdateStyle(true);
 						shareDevicePosition(((Device) element).getID());
 						this.setMobileBattery(this.getMobileBattery() - BATTERY_PER_MSG);
+					} else if(this.state == State.ACTING) {
+						GridPoint devicePt = this.devicesToTurnOFF.remove(0);
+						this.devicesToTurnOFF.add(devicePt);
 					}
 				} else if (element.getClass() == Recharge.class) {
 					if (goingToRecharge) {
@@ -262,6 +261,7 @@ public class Player extends Agent {
 	 * Player is next to a recharger and so is going to recharge his mobile
 	 */
 	public void rechargeMobile() {
+		System.out.println("*** " + this.getName() + " is recharging...");
 		mobileBattery += BATTERY_PER_TICK;
 		if (mobileBattery >= 100) {
 			mobileBattery = 100;
@@ -363,6 +363,7 @@ public class Player extends Agent {
 	public boolean needsToRecharge() {
 		if (mobileBattery <= BIG_RADIUS) {
 			goingToRecharge = true;
+			System.out.println("*** " + this.getName() + " needs to recharge");
 			return true;
 		}
 		return false;
@@ -474,7 +475,7 @@ public class Player extends Agent {
 					resetCurrentState();
 				}
 				agent.escape(slenderPoint);
-			} else {
+			} else {//not escaping from slender
 				if (agent.isStartingRunning()) {
 					agent.setStartsRunning(false);
 					agent.setUpdateStyle(true);
@@ -489,7 +490,7 @@ public class Player extends Agent {
 						if(agent.getState() != State.ACTING) {
 							exploringMove(lightPeriod, darknessPeriod);
 						} else {
-							
+							actingMove();
 						}
 					}
 				}
@@ -506,7 +507,7 @@ public class Player extends Agent {
 		}
 
 		public void rechargeMobileMove() {
-			if (targetPoint != null) {// ja avistou o carregador
+			if (targetPoint != null) {// already saw the recharger
 				agent.turnMobileOff();
 				agent.move();
 			} else {
@@ -524,30 +525,18 @@ public class Player extends Agent {
 			if(agent.canSeeDeviceInTheDark()) {
 				agent.turnMobileOff();
 				agent.move();
+			} else {
+				agent.turnMobileOn();
+				agent.move();
+				agent.setMobileBattery(agent.getMobileBattery() - BATTERY_PER_STEP);
 			}
 		}
 
 		public void exploringMove(int lightPeriod, int darknessPeriod) {
 			if (lightPeriod > 0) {
-				agent.turnMobileOn();
-				if (update) {
-					agent.setUpdateStyle(true);
-					update = false;
-				}
-				agent.move();
-				agent.setLightPeriod(lightPeriod - 1);
-				agent.setMobileBattery(agent.getMobileBattery() - BATTERY_PER_STEP);
-				if ((lightPeriod - 1) == 0) {
-					update = true;
-				}
+				moveWithLight(lightPeriod);
 			} else if (darknessPeriod > 0) {
-				agent.turnMobileOff();
-				if (update) {
-					agent.setUpdateStyle(true);
-					update = false;
-				}
-				agent.move();
-				agent.setDarknessPeriod(darknessPeriod - 1);
+				moveInTheDark(darknessPeriod);
 			} else {
 				update = true;
 				int newLightPeriod = rand.nextInt(5);
@@ -555,6 +544,30 @@ public class Player extends Agent {
 				agent.setLightPeriod(newLightPeriod);
 				agent.setDarknessPeriod(newDarknessPeriod);
 			}
+		}
+		
+		public void moveWithLight(int lightPeriod) {
+			agent.turnMobileOn();
+			if (update) {
+				agent.setUpdateStyle(true);
+				update = false;
+			}
+			agent.move();
+			agent.setLightPeriod(lightPeriod - 1);
+			agent.setMobileBattery(agent.getMobileBattery() - BATTERY_PER_STEP);
+			if ((lightPeriod - 1) == 0) {
+				update = true;
+			}
+		}
+		
+		public void moveInTheDark(int darknessPeriod) {
+			agent.turnMobileOff();
+			if (update) {
+				agent.setUpdateStyle(true);
+				update = false;
+			}
+			agent.move();
+			agent.setDarknessPeriod(darknessPeriod - 1);
 		}
 	}
 
@@ -572,19 +585,20 @@ public class Player extends Agent {
 			boolean next = true;
 			if (agent.isMobileOn()) {
 				while (next) {
-//					TODO: receive tower instructionS
 					ACLMessage msg = receive(mt);
 					if (msg != null) {
 						if (msg.getConversationId() == "device_found") {
 							int deviceID = Integer.parseInt(msg.getContent());
 							agent.acknowledgeNewDevice(deviceID);
+							System.out.println("|-> " + agent.getName() + " received msg from " + msg.getSender());
+							System.out.println("        Device " + deviceID);
 						} else if(msg.getConversationId() == "target_route") {
-							System.out.println(agent.getName() + " route:");
-							System.out.println(msg.getContent());
 							String devicesID_tmpStr[] = msg.getContent().split(" ");
+							System.out.println("!!! " + agent.getName() + " has to turn off devices " + Arrays.toString(devicesID_tmpStr));
 							int[] devicesID_tmp = Arrays.asList(devicesID_tmpStr).stream().mapToInt(Integer::parseInt).toArray();
 							List<Integer> devicesID = Arrays.stream(devicesID_tmp).boxed().collect(Collectors.toList());
 							storeDevicesToTurnOff(devicesID);
+							agent.setState(State.ACTING);
 						}
 					} else {
 						block();
@@ -601,6 +615,7 @@ public class Player extends Agent {
 	
 	public void storeDevicesToTurnOff(List<Integer> ids) {
 		
+		GridPoint[] devices = {};
 		Iterator<Object> iter = grid.getObjects().iterator();
 		while (iter.hasNext()) {
 			Object element = iter.next();
@@ -608,10 +623,14 @@ public class Player extends Agent {
 				Integer id = (Integer)((Device) element).getID();
 				int index = ids.indexOf(id);
 				if (index != -1) {
-					this.devicesToTurnOFF.add(index, grid.getLocation((Device) element));
+					if(index >= devices.length) {
+						devices = Arrays.copyOf(devices, index + 1);
+					}
+					devices[index] = grid.getLocation((Device) element);
 				}
 			}
 		}
+		this.devicesToTurnOFF = new ArrayList<GridPoint>(Arrays.asList(devices));
 	}
 
 	public boolean isAlive() {
@@ -625,6 +644,7 @@ public class Player extends Agent {
 	}
 
 	public void die() {
+		System.out.println(">>> " + this.getName() + " died...");
 		Context<?> context = ContextUtils.getContext(this);
 		context.remove(this);
 		doDelete();
@@ -652,6 +672,7 @@ public class Player extends Agent {
 	 * @param id : device's id
 	 */
 	public void shareDevicePosition(int id) {
+		System.out.println("^|_ " + this.getName() + " found device " + id);
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setContent(Integer.toString(id));
 		msg.setConversationId("device_found");

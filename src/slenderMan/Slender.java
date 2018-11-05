@@ -169,7 +169,6 @@ public class Slender extends Agent {
 		if (humans.size() > 0) {
 			int index = RandomHelper.nextIntFromTo(0, humans.size() - 1);
 			Object obj = humans.get(index);
-			System.out.println("Killing player!");
 			((Player) obj).die();
 		}
 	}

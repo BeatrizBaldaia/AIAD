@@ -1,6 +1,7 @@
 package slenderMan;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +26,7 @@ public class Tower extends Agent {
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
 	private List<List<Node>> routes = new ArrayList<List<Node>>();
-	private ArrayList<Player> assignedPlayers = new ArrayList<Player>();
+	private Player[] assignedPlayers = {};
 	private ArrayList<Player> remainingPlayers = new ArrayList<Player>();
 
 	public Tower(ContinuousSpace<Object> space, Grid<Object> grid, Context<Object> context, Player[] players) {
@@ -65,16 +66,16 @@ public class Tower extends Agent {
 			boolean endGameLost = agent.isEndGameLost();
 			boolean endGameWin = agent.isEndGameWin();
 			
-			if (agent.areAllPlayersReady()) {
-				System.out.println("Tower: ALL PLAYERS ARE READY!!!");
-				if(!agent.doAlgothirtm()) {
-					endGameLost = true;
-				}
-			}
-			
 			if(!agent.getRoutes().isEmpty()) {
 				if(!agent.assignNewPlayer()) {
 					endGameLost = true;
+				}
+			} else {
+				if (agent.areAllPlayersReady()) {
+					System.out.println("--- ALL PLAYERS ARE READY ---");
+					if(!agent.doAlgothirtm()) {
+						endGameLost = true;
+					}
 				}
 			}
 
@@ -110,8 +111,6 @@ public class Tower extends Agent {
 					String contentID = msg.getConversationId();
 					if (contentID == "device_found") {
 						int deviceID = Integer.parseInt(msg.getContent());
-						System.out.println(agent.getName() + " received msg from " + msg.getSender());
-						System.out.println("        Device " + deviceID);
 					} else if (contentID == "knows_all_devices") {
 						int agentID = Integer.parseInt(msg.getContent());
 						agent.acknowledgePlayer(agentID);
@@ -191,7 +190,6 @@ public class Tower extends Agent {
 			}
 			players_routes.add(route);
 		}
-		System.out.println(players_routes);
 		return players_routes;
 	}
 
@@ -214,7 +212,10 @@ public class Tower extends Agent {
 				remaining_players.add(p);
 			} else {
 				int index = routes.indexOf(route);
-				this.assignedPlayers.add(index, p);
+				if(index >= this.assignedPlayers.length) {
+					this.assignedPlayers = Arrays.copyOf(this.assignedPlayers, index + 1);
+				}
+				this.assignedPlayers[index] = p;
 				sendRouteToPlayer(p, route);
 				routes_tmp.remove(route);
 				if(routes_tmp.isEmpty()) {
@@ -224,7 +225,6 @@ public class Tower extends Agent {
 		}
 		this.remainingPlayers.addAll(remaining_players);
 		if(!routes_tmp.isEmpty()) {
-			System.out.println("Remaining routes: " + routes_tmp.toString());
 			return handleRemainingRoutes(routes_tmp, remaining_players);
 		}
 		return true;
@@ -258,7 +258,6 @@ public class Tower extends Agent {
 	 */
 	public boolean handleRemainingRoutes(List<List<Node>> routes, List<Player> players) {
 		if(routes.size() > players.size()) {
-			System.out.println("Not enough players...");
 			return false;
 		}
 		for(List<Node> route: routes) {
@@ -335,14 +334,13 @@ public class Tower extends Agent {
 	 * @return false if it's a list game
 	 */
 	public boolean assignNewPlayer() {
-		for(int i = 0; i< this.assignedPlayers.size(); i++) {
-			if(!this.assignedPlayers.get(i).isAlive()) {
+		for(int i = 0; i< this.assignedPlayers.length; i++) {
+			if(!this.assignedPlayers[i].isAlive()) {
 				if(this.remainingPlayers.isEmpty()) {
 					return false;
 				}
 				Player p = this.remainingPlayers.remove(0);
-				this.assignedPlayers.remove(i);
-				this.assignedPlayers.add(i, p);
+				this.assignedPlayers[i] = p;
 				List<Node> route = this.routes.get(i);
 				sendRouteToPlayer(p, route);
 			}
