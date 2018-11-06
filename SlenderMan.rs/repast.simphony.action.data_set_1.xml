@@ -14,7 +14,17 @@
     <hashCode>-1956267173</hashCode>
   </scheduleParams>
   <atEnd>false</atEnd>
-  <methodDataSources class="linked-hash-map"/>
+  <methodDataSources class="linked-hash-map">
+    <entry>
+      <string>d</string>
+      <repast.simphony.data2.engine.MethodDataSourceDefinition>
+        <id>d</id>
+        <className>slenderMan.Device</className>
+        <methodName>datasource</methodName>
+        <aggType>SUM</aggType>
+      </repast.simphony.data2.engine.MethodDataSourceDefinition>
+    </entry>
+  </methodDataSources>
   <countSources class="linked-hash-map">
     <entry>
       <string>p</string>

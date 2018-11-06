@@ -19,7 +19,12 @@ public class Device {
 	private boolean on = true;
 	private int time = Tower.MAX_DEVICE_TIME;
 	private NdPoint pt_space = null;
-
+	public int datasource() {
+		if(on) {
+			return 1;
+		}
+		return 0;
+	}
 	public Device(ContinuousSpace<Object> space, Grid<Object> grid, int id) {
 		this.space = space;
 		this.grid = grid;

@@ -112,3 +112,135 @@ java.lang.UnsupportedOperationException
 	at repast.simphony.engine.schedule.Schedule.execute(Schedule.java:352)
 	at repast.simphony.ui.GUIScheduleRunner$ScheduleLoopRunnable.run(GUIScheduleRunner.java:52)
 	at java.lang.Thread.run(Unknown Source)
+INFO  [AWT-EventQueue-0] 2018-11-06 14:01:50,253 repast.simphony.batch.gui.BatchConfigMediator - Writing batch run config file to: C:\Users\Anabela\git\AIAD\output\config.props
+INFO  [AWT-EventQueue-0] 2018-11-06 14:01:51,157 repast.simphony.batch.gui.BatchConfigMediator - Unrolling batch parameter file:
+	C:\Users\Anabela\git\AIAD\batch\batch_params.xml to
+	C:\Users\Anabela\AppData\Local\Temp\unrolledParamFile.txt
+INFO  [SwingWorker-pool-2-thread-1] 2018-11-06 14:02:47,655 repast.simphony.batch.ssh.LocalSession - 
+	Copying locally C:\Users\Anabela\AppData\Local\Temp\Anabela_localhost397596414119936794.zip to 
+C:\Users\Anabela\AppData\Local\Temp\simphony_model_1541512960001 ...
+INFO  [SwingWorker-pool-2-thread-1] 2018-11-06 14:02:47,730 repast.simphony.batch.ssh.LocalSession - Copying Finished.
+INFO  [SwingWorker-pool-2-thread-1] 2018-11-06 14:02:47,734 repast.simphony.batch.ssh.SessionsDriver - Initialization Time: 0,1288
+INFO  [SwingWorker-pool-2-thread-1] 2018-11-06 14:02:47,734 repast.simphony.batch.ssh.LocalSession - Unzipping model C:\Users\Anabela\AppData\Local\Temp\simphony_model_1541512960001\Anabela_localhost397596414119936794.zip
+INFO  [SwingWorker-pool-2-thread-1] 2018-11-06 14:02:55,176 repast.simphony.batch.ssh.LocalSession - Running model on localhost ...
+INFO  [Thread-5] 2018-11-06 14:03:25,319 repast.simphony.batch.ssh.LocalSession - ^|_ Player2@NOME LAUCHER found device 3
+INFO  [Thread-5] 2018-11-06 14:03:25,340 repast.simphony.batch.ssh.LocalSession - |-> Player3@NOME LAUCHER received msg from ( agent-identifier :name "Player2@NOME LAUCHER" )
+INFO  [Thread-5] 2018-11-06 14:03:25,340 repast.simphony.batch.ssh.LocalSession -         Device 3
+INFO  [Thread-5] 2018-11-06 14:03:25,345 repast.simphony.batch.ssh.LocalSession - >>> Player0@NOME LAUCHER died...
+INFO  [Thread-5] 2018-11-06 14:03:25,360 repast.simphony.batch.ssh.LocalSession - |-> Player4@NOME LAUCHER received msg from ( agent-identifier :name "Player2@NOME LAUCHER" )
+INFO  [Thread-5] 2018-11-06 14:03:25,361 repast.simphony.batch.ssh.LocalSession -         Device 3
+INFO  [Thread-5] 2018-11-06 14:03:25,371 repast.simphony.batch.ssh.LocalSession - ^|_ Player1@NOME LAUCHER found device 6
+INFO  [Thread-5] 2018-11-06 14:03:25,383 repast.simphony.batch.ssh.LocalSession - |-> Player1@NOME LAUCHER received msg from ( agent-identifier :name "Player2@NOME LAUCHER" )
+INFO  [Thread-5] 2018-11-06 14:03:25,384 repast.simphony.batch.ssh.LocalSession -         Device 3
+INFO  [Thread-5] 2018-11-06 14:03:25,386 repast.simphony.batch.ssh.LocalSession - ^|_ Player2@NOME LAUCHER found device 6
+INFO  [Thread-5] 2018-11-06 14:03:25,388 repast.simphony.batch.ssh.LocalSession - |-> Player3@NOME LAUCHER received msg from ( agent-identifier :name "Player1@NOME LAUCHER" )
+INFO  [Thread-5] 2018-11-06 14:03:25,389 repast.simphony.batch.ssh.LocalSession -         Device 6
+INFO  [Thread-5] 2018-11-06 14:03:25,393 repast.simphony.batch.ssh.LocalSession - |-> Player3@NOME LAUCHER received msg from ( agent-identifier :name "Player2@NOME LAUCHER" )
+INFO  [Thread-5] 2018-11-06 14:03:25,418 repast.simphony.batch.ssh.LocalSession -         Device 6
+INFO  [Thread-5] 2018-11-06 14:03:25,421 repast.simphony.batch.ssh.LocalSession - ^|_ Player4@NOME LAUCHER found device 2
+INFO  [Thread-5] 2018-11-06 14:03:25,424 repast.simphony.batch.ssh.LocalSession - |-> Player2@NOME LAUCHER received msg from ( agent-identifier :name "Player1@NOME LAUCHER" )
+INFO  [Thread-5] 2018-11-06 14:03:25,424 repast.simphony.batch.ssh.LocalSession -         Device 6
+INFO  [Thread-5] 2018-11-06 14:03:25,425 repast.simphony.batch.ssh.LocalSession - |-> Player2@NOME LAUCHER received msg from ( agent-identifier :name "Player4@NOME LAUCHER" )
+INFO  [Thread-5] 2018-11-06 14:03:25,426 repast.simphony.batch.ssh.LocalSession -         Device 2
+INFO  [pool-3-thread-1] 2018-11-06 14:03:55,236 repast.simphony.batch.ssh.LocalDonePoller - Polled C:\Users\Anabela\AppData\Local\Temp\simphony_model_1541512960001 for DONE:  yes
+INFO  [SwingWorker-pool-2-thread-1] 2018-11-06 14:03:55,237 repast.simphony.batch.ssh.SessionsDriver - Run Time: 1,1250
+INFO  [SwingWorker-pool-2-thread-1] 2018-11-06 14:03:55,342 repast.simphony.batch.ssh.LocalSession - Finding output on localhost in C:\Users\Anabela\AppData\Local\Temp\simphony_model_1541512960001
+INFO  [SwingWorker-pool-2-thread-1] 2018-11-06 14:03:55,378 repast.simphony.batch.ssh.SessionsDriver - Aggregating output into C:/Users/Anabela/git/AIAD/output
+INFO  [SwingWorker-pool-2-thread-1] 2018-11-06 14:03:55,397 repast.simphony.batch.ssh.SessionsDriver - Get Output Time: 0,0027
+INFO  [SwingWorker-pool-2-thread-1] 2018-11-06 14:03:55,398 repast.simphony.batch.ssh.SessionsDriver - Finished. Elapsed Time: 1,2570
+ERROR [AWT-EventQueue-0] 2018-11-06 14:26:22,306 repast.simphony.ui.plugin.editor.OptionsDialog - Error applying content in Options Dialog
+repast.simphony.ui.plugin.editor.InvalidStateException: org.pietschy.wizard.InvalidStateException: Missing data source name. Each data source must be named.
+	at repast.simphony.ui.plugin.editor.OptionsContentWizardStepAdapter.apply(OptionsContentWizardStepAdapter.java:41)
+	at repast.simphony.ui.plugin.editor.OptionsDialog.apply(OptionsDialog.java:170)
+	at repast.simphony.ui.plugin.editor.OptionsDialog$2.actionPerformed(OptionsDialog.java:118)
+	at javax.swing.AbstractButton.fireActionPerformed(Unknown Source)
+	at javax.swing.AbstractButton$Handler.actionPerformed(Unknown Source)
+	at javax.swing.DefaultButtonModel.fireActionPerformed(Unknown Source)
+	at javax.swing.DefaultButtonModel.setPressed(Unknown Source)
+	at javax.swing.plaf.basic.BasicButtonListener.mouseReleased(Unknown Source)
+	at java.awt.Component.processMouseEvent(Unknown Source)
+	at javax.swing.JComponent.processMouseEvent(Unknown Source)
+	at java.awt.Component.processEvent(Unknown Source)
+	at java.awt.Container.processEvent(Unknown Source)
+	at java.awt.Component.dispatchEventImpl(Unknown Source)
+	at java.awt.Container.dispatchEventImpl(Unknown Source)
+	at java.awt.Component.dispatchEvent(Unknown Source)
+	at java.awt.LightweightDispatcher.retargetMouseEvent(Unknown Source)
+	at java.awt.LightweightDispatcher.processMouseEvent(Unknown Source)
+	at java.awt.LightweightDispatcher.dispatchEvent(Unknown Source)
+	at java.awt.Container.dispatchEventImpl(Unknown Source)
+	at java.awt.Window.dispatchEventImpl(Unknown Source)
+	at java.awt.Component.dispatchEvent(Unknown Source)
+	at java.awt.EventQueue.dispatchEventImpl(Unknown Source)
+	at java.awt.EventQueue.access$500(Unknown Source)
+	at java.awt.EventQueue$3.run(Unknown Source)
+	at java.awt.EventQueue$3.run(Unknown Source)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Unknown Source)
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Unknown Source)
+	at java.awt.EventQueue$4.run(Unknown Source)
+	at java.awt.EventQueue$4.run(Unknown Source)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Unknown Source)
+	at java.awt.EventQueue.dispatchEvent(Unknown Source)
+	at java.awt.EventDispatchThread.pumpOneEventForFilters(Unknown Source)
+	at java.awt.EventDispatchThread.pumpEventsForFilter(Unknown Source)
+	at java.awt.EventDispatchThread.pumpEventsForFilter(Unknown Source)
+	at java.awt.WaitDispatchSupport$2.run(Unknown Source)
+	at java.awt.WaitDispatchSupport$4.run(Unknown Source)
+	at java.awt.WaitDispatchSupport$4.run(Unknown Source)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.awt.WaitDispatchSupport.enter(Unknown Source)
+	at java.awt.Dialog.show(Unknown Source)
+	at java.awt.Component.show(Unknown Source)
+	at java.awt.Component.setVisible(Unknown Source)
+	at java.awt.Window.setVisible(Unknown Source)
+	at java.awt.Dialog.setVisible(Unknown Source)
+	at repast.simphony.ui.plugin.editor.OptionsDialog.showDialog(OptionsDialog.java:252)
+	at repast.simphony.ui.plugin.editor.OptionsEditorDialog.display(OptionsEditorDialog.java:59)
+	at repast.simphony.ui.tree.ScenarioTree.showDialog(ScenarioTree.java:251)
+	at repast.simphony.ui.tree.ScenarioTree.access$1(ScenarioTree.java:242)
+	at repast.simphony.ui.tree.ScenarioTree$EditAction.actionPerformed(ScenarioTree.java:225)
+	at javax.swing.AbstractButton.fireActionPerformed(Unknown Source)
+	at javax.swing.AbstractButton$Handler.actionPerformed(Unknown Source)
+	at javax.swing.DefaultButtonModel.fireActionPerformed(Unknown Source)
+	at javax.swing.DefaultButtonModel.setPressed(Unknown Source)
+	at javax.swing.AbstractButton.doClick(Unknown Source)
+	at com.jidesoft.plaf.vsnet.VsnetMenuItemUI.doClick(VsnetMenuItemUI.java:1395)
+	at com.jidesoft.plaf.vsnet.VsnetMenuItemUI$MouseInputHandler.mouseReleased(VsnetMenuItemUI.java:1190)
+	at java.awt.Component.processMouseEvent(Unknown Source)
+	at javax.swing.JComponent.processMouseEvent(Unknown Source)
+	at java.awt.Component.processEvent(Unknown Source)
+	at java.awt.Container.processEvent(Unknown Source)
+	at java.awt.Component.dispatchEventImpl(Unknown Source)
+	at java.awt.Container.dispatchEventImpl(Unknown Source)
+	at java.awt.Component.dispatchEvent(Unknown Source)
+	at java.awt.LightweightDispatcher.retargetMouseEvent(Unknown Source)
+	at java.awt.LightweightDispatcher.processMouseEvent(Unknown Source)
+	at java.awt.LightweightDispatcher.dispatchEvent(Unknown Source)
+	at java.awt.Container.dispatchEventImpl(Unknown Source)
+	at java.awt.Window.dispatchEventImpl(Unknown Source)
+	at java.awt.Component.dispatchEvent(Unknown Source)
+	at java.awt.EventQueue.dispatchEventImpl(Unknown Source)
+	at java.awt.EventQueue.access$500(Unknown Source)
+	at java.awt.EventQueue$3.run(Unknown Source)
+	at java.awt.EventQueue$3.run(Unknown Source)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Unknown Source)
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Unknown Source)
+	at java.awt.EventQueue$4.run(Unknown Source)
+	at java.awt.EventQueue$4.run(Unknown Source)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Unknown Source)
+	at java.awt.EventQueue.dispatchEvent(Unknown Source)
+	at java.awt.EventDispatchThread.pumpOneEventForFilters(Unknown Source)
+	at java.awt.EventDispatchThread.pumpEventsForFilter(Unknown Source)
+	at java.awt.EventDispatchThread.pumpEventsForHierarchy(Unknown Source)
+	at java.awt.EventDispatchThread.pumpEvents(Unknown Source)
+	at java.awt.EventDispatchThread.pumpEvents(Unknown Source)
+	at java.awt.EventDispatchThread.run(Unknown Source)
+Caused by: org.pietschy.wizard.InvalidStateException: Missing data source name. Each data source must be named.
+	at repast.simphony.data2.wizard.AggMethodSourcePanel.apply(AggMethodSourcePanel.java:202)
+	at repast.simphony.data2.wizard.AggregateSourceStep.applyState(AggregateSourceStep.java:68)
+	at repast.simphony.ui.plugin.editor.OptionsContentWizardStepAdapter.apply(OptionsContentWizardStepAdapter.java:39)
+	... 88 more
