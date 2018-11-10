@@ -25,11 +25,19 @@ public class Node {
         this.id = id;
     }
 
-	public Node getPossible(List<Node> route, List<Node> to_shearch) {
+    /**
+     * Gets a node from the to_search list that can make part of route list.
+     * The cost of route has to be less than MAX_DIST_ROUTE, it is, the period
+     * of devices' inactivity
+     * @param route
+     * @param to_search
+     * @return
+     */
+	public Node getPossible(List<Node> route, List<Node> to_search) {
 		double dist = getDistance(route);
 		Node res = null;
 		double min = Double.MAX_VALUE;
-		for(Node pos : to_shearch) {
+		for(Node pos : to_search) {
 			double step = space.getDistance(route.get(route.size()-1).getPoint(), pos.getPoint());
 			if(dist + step <= MAX_DIST_ROUTE && dist + step <= min ) {
 				res = pos;
@@ -44,6 +52,11 @@ public class Node {
 		return Integer.toString(id);
 	}
 
+	/**
+	 * Gets the route cost
+	 * @param route
+	 * @return
+	 */
 	private double getDistance(List<Node> route) {
 		double res = 0;
 		for(int i = 0; i < route.size()-1; i++) {
@@ -60,45 +73,5 @@ public class Node {
 
 	public void setPoint(NdPoint point) {
 		this.point = point;
-	}
-    
-//  private String name;
-//    private List<Node> shortestPath = new LinkedList<>();
-//     
-//    private Double distance = Double.MAX_VALUE;
-//    public Double getDistance() {
-//		return distance;
-//	}
-//    public void setDistance(double distance) {
-//		this.distance = distance;
-//	}
-//	public String getName() {
-//		return name;
-//	}
-//
-//	public void setName(String name) {
-//		this.name = name;
-//	}
-//
-//	public List<Node> getShortestPath() {
-//		return shortestPath;
-//	}
-//
-//	public void setShortestPath(List<Node> shortestPath) {
-//		this.shortestPath = shortestPath;
-//	}
-//
-//	public void setDistance(Double distance) {
-//		this.distance = distance;
-//	}
-//
-//
-//	public NdPoint getPoint() {
-//		return point;
-//	}
-//
-//	public void setPoint(NdPoint point) {
-//		this.point = point;
-//	}
-     
+	}     
 }
