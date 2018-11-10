@@ -1,53 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <parameters>
-					<parameter name="randomSeed" displayName="Default Random Seed" type="int" 
-						defaultValue="__NULL__"
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
-				<parameter name="player_count" displayName="Number of Pslayers" type="int" 
-						defaultValue="5" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
-				<parameter name="slender_running_speed" displayName="Slender Running Speed" type="double" 
-						defaultValue="1.3" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-									
-		/>
-				<parameter name="slender_radius" displayName="Slender Vision Range" type="int" 
-						defaultValue="3" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
-				<parameter name="player_big_radius" displayName="Player Vision Range (with light)" type="int" 
-						defaultValue="7" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
-				<parameter name="player_speed" displayName="Player speed" type="int" 
-						defaultValue="1" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
-				<parameter name="player_small_radius" displayName="Player Vision Range (in the dark)" type="int" 
-						defaultValue="3" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
-									
-		/>
-				<parameter name="slender_walking_speed" displayName="Slender Walking Speed" type="double" 
-						defaultValue="1.0" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-									
-		/>
-		</parameters>
+	<parameter name="randomSeed" displayName="Default Random Seed"
+		type="int" defaultValue="__NULL__" isReadOnly="false"
+		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
+	<parameter name="player_count" displayName="Number of Players"
+		type="int" defaultValue="5" isReadOnly="false"
+		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
+	<parameter name="slender_running_speed" displayName="Slender Running Speed"
+		type="double" defaultValue="0.8" isReadOnly="false"
+		converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter" />
+	<parameter name="slender_radius" displayName="Slender Vision Range"
+		type="int" defaultValue="3" isReadOnly="false"
+		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
+	<parameter name="player_big_radius" displayName="Player Vision Range (with light)"
+		type="int" defaultValue="7" isReadOnly="false"
+		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
+	<parameter name="player_speed" displayName="Player speed"
+		type="int" defaultValue="1" isReadOnly="false"
+		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
+	<parameter name="player_small_radius" displayName="Player Vision Range (in the dark)"
+		type="int" defaultValue="3" isReadOnly="false"
+		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
+	<parameter name="slender_walking_speed" displayName="Slender Walking Speed"
+		type="double" defaultValue="1.0" isReadOnly="false"
+		converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter" />
+	<parameter name="device_timeout" displayName="Device Inactivity Timeout"
+		type="int" defaultValue="50" isReadOnly="false"
+		converter="repast.simphony.parameter.StringConverterFactory$IntConverter" />
+</parameters>
 
 

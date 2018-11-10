@@ -18,7 +18,7 @@ import sajas.core.behaviours.CyclicBehaviour;
 import sajas.core.behaviours.TickerBehaviour;
 
 public class Slender extends Agent {
-	private static double RUNNING_SPEED = 1.3;
+	private static double RUNNING_SPEED = 0.8;
 	private static double WALKING_SPEED = 1;
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
@@ -68,6 +68,11 @@ public class Slender extends Agent {
 
 	}	
 	
+	/**
+	 * Gets the nearest player in the Slender's vision range
+	 * @param myPt slender position
+	 * @return
+	 */
 	public Player getNearestPlayer(GridPoint myPt) {
 		GridCellNgh<Player> nghCreator = new GridCellNgh<Player>(grid, myPt, Player.class, RADIUS, RADIUS);
 		List<GridCell<Player>> gridCells = nghCreator.getNeighborhood(true);
@@ -87,6 +92,11 @@ public class Slender extends Agent {
 		return nearestPlayer;
 	}
 
+	/**
+	 * From the list of players using the phone, it gets the nearest one
+	 * @param myPt slender position
+	 * @return
+	 */
 	public Player getNearestPlayerWithPhone(GridPoint myPt) {
 		double nearestPlayerWithPhoneDist = Double.MAX_VALUE;
 		Player nearestPlayerWithPhone = null;
@@ -109,6 +119,13 @@ public class Slender extends Agent {
 		return nearestPlayerWithPhone;
 	}
 	
+	/**
+	 * Chosses the target/prey between the nearest player and the nearest player using his mobile phone
+	 * @param nearestPlayer
+	 * @param nearestPlayerWithMobile
+	 * @param myPt
+	 * @return
+	 */
 	public Player choosePrey(Player nearestPlayer, Player nearestPlayerWithMobile, GridPoint myPt) {
 		if(nearestPlayer == null) {
 			if(nearestPlayerWithMobile == null) {
@@ -130,6 +147,11 @@ public class Slender extends Agent {
 		
 	}
 	
+	/**
+	 * Generates a random position for Slender's next move
+	 * (when he has no target/prey)
+	 * @param myPt
+	 */
 	public void randomMove(GridPoint myPt) {
 		GridCellNgh<Object> nghCreator = new GridCellNgh<Object>(grid, myPt, Object.class, RADIUS,
 				RADIUS);
@@ -139,7 +161,12 @@ public class Slender extends Agent {
 		moveTowards(myPt, otherPoint, WALKING_SPEED);
 	}
 	
-	
+	/**
+	 * Move towards the prey
+	 * @param src
+	 * @param dest
+	 * @param speed
+	 */
 	public void moveTowards(GridPoint src, GridPoint dest, double speed) {
 		// only move if we are not already in this grid location
 		if (!dest.equals(src)) {
@@ -158,6 +185,9 @@ public class Slender extends Agent {
 		}
 	}
 
+	/**
+	 * Slender is in the same cell as a player so he is going to kill him
+	 */
 	public void kill() {
 		GridPoint pt = grid.getLocation(this);
 		List<Object> humans = new ArrayList<Object>();

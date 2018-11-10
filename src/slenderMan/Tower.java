@@ -18,7 +18,7 @@ import sajas.core.Agent;
 import sajas.core.behaviours.CyclicBehaviour;
 
 public class Tower extends Agent {
-	static final int MAX_DEVICE_TIME = 50;
+	static int MAX_DEVICE_TIME = 50;
 	static final int NUMBER_OF_DEVICES = 8;
 	private Device[] dev = new Device[NUMBER_OF_DEVICES];
 	private Player[] players;
@@ -29,10 +29,11 @@ public class Tower extends Agent {
 	private Player[] assignedPlayers = {};
 	private ArrayList<Player> remainingPlayers = new ArrayList<Player>();
 
-	public Tower(ContinuousSpace<Object> space, Grid<Object> grid, Context<Object> context, Player[] players) {
+	public Tower(ContinuousSpace<Object> space, Grid<Object> grid, Context<Object> context, Player[] players, int device_timeout) {
 		this.players = players;
 		this.space = space;
 		this.grid = grid;
+		MAX_DEVICE_TIME = device_timeout;
 		// Create static map elements (Devices and Rechargers)
 		for (int i = 0; i < dev.length; i++) {
 			dev[i] = new Device(space, grid, i);

@@ -96,7 +96,8 @@ public class SlenderManBuilder extends RepastSLauncher implements ContextBuilder
 				players[i] = p;
 			}
 			
-			Tower t = new Tower(space, grid, context, players);
+			int device_timeout = (Integer) params.getValue("device_timeout");
+			Tower t = new Tower(space, grid, context, players, device_timeout);
 			agentContainer.acceptNewAgent("Tower", t).start();
 
 			for (Object obj : context) {
