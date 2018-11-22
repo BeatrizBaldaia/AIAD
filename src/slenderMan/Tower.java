@@ -28,6 +28,7 @@ public class Tower extends Agent {
 	private List<List<Node>> routes = new ArrayList<List<Node>>();
 	private Player[] assignedPlayers = {};
 	private ArrayList<Player> remainingPlayers = new ArrayList<Player>();
+	private State state = State.RUNNING;
 
 	public Tower(ContinuousSpace<Object> space, Grid<Object> grid, Context<Object> context, Player[] players, int device_timeout) {
 		this.players = players;
@@ -47,6 +48,14 @@ public class Tower extends Agent {
 	public void setup() {
 		addBehaviour(new WatchGame(this));
 		addBehaviour(new ListeningBehaviour(this));
+	}
+	
+	public State getState() {
+		return this.state;
+	}
+
+	public void setState(State s) {
+		this.state = s;
 	}
 
 	private class WatchGame extends CyclicBehaviour {
@@ -70,12 +79,14 @@ public class Tower extends Agent {
 			if(!agent.getRoutes().isEmpty()) {
 				if(!agent.assignNewPlayer()) {
 					endGameLost = true;
+					agent.setState(State.LOST);
 				}
 			} else {
 				if (agent.areAllPlayersReady()) {
 					System.out.println("--- ALL PLAYERS ARE READY ---");
 					if(!agent.doAlgothirtm()) {
 						endGameLost = true;
+						agent.setState(State.LOST);
 					}
 				}
 			}
@@ -131,16 +142,6 @@ public class Tower extends Agent {
 	public Player[] getPlayers() {
 		return this.players;
 	}
-
-	class State {
-		int cover, head;
-
-		State(int c, int h) {
-			cover = c;
-			head = h;
-		}
-	}
-
 	
 
 	/**
@@ -372,6 +373,7 @@ public class Tower extends Agent {
 				return false;
 			}
 		}
+		this.state = State.VICTORY;
 		return true;
 	}
 }
