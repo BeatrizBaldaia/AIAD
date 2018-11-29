@@ -5,13 +5,13 @@
   <inclBatchRun>false</inclBatchRun>
   <inclRandomSeed>false</inclRandomSeed>
   <scheduleParams>
-    <start>1.0</start>
-    <interval>1.0</interval>
+    <start>Infinity</start>
+    <interval>0.0</interval>
     <priority>-Infinity</priority>
     <pType>LAST</pType>
     <duration>-1.0</duration>
-    <frequency>REPEAT</frequency>
-    <hashCode>-1956267173</hashCode>
+    <frequency>ONE_TIME</frequency>
+    <hashCode>-2030471992</hashCode>
   </scheduleParams>
   <atEnd>false</atEnd>
   <methodDataSources class="linked-hash-map">

@@ -1,0 +1,12 @@
+<repast.simphony.data2.engine.FileSinkDescriptor simphonyVersion="2.5.0">
+  <name>GameEnd</name>
+  <dataSet>A Data Set</dataSet>
+  <delimiter>;</delimiter>
+  <format>TABULAR</format>
+  <sourceIds class="linked-hash-set">
+    <string>tick</string>
+    <string>State</string>
+  </sourceIds>
+  <fileName>GameEnd.csv</fileName>
+  <addTimeStamp>true</addTimeStamp>
+</repast.simphony.data2.engine.FileSinkDescriptor>
