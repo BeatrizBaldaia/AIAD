@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<sweep runs="1">
+	<parameter name="slender_running_speed" type="constant"
+		constant_type="double" value="1.3"></parameter>
+	<parameter name="slender_radius" type="constant"
+		constant_type="int" value="1"></parameter>
+	<parameter name="slender_walking_speed" type="constant"
+		constant_type="double" value="1"></parameter>
+	<parameter name="player_count" type="number" number_type="int"
+		start="3" end="8" step="1">
+		<parameter name="device_timeout" type="number" number_type="int"
+			start="10" end="50" step="10">
+			<parameter name="player_big_radius" type="number"
+				number_type="int" start="5" end="9" step="2">
+				<parameter name="player_speed" type="number" number_type="int"
+					start="1" end="2" step="1">
+					<parameter name="player_small_radius" type="number"
+						number_type="int" start="1" end="3" step="1"></parameter>
+				</parameter>
+			</parameter>
+		</parameter>
+	</parameter>
+</sweep>
